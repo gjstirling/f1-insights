@@ -1,67 +1,65 @@
 package controllers
 
-import geny.Bytes
-import play.api.libs.json.{JsError, JsPath, JsSuccess, JsValue, Json, Reads}
-import play.api.libs.functional.syntax._
+import controllers.HomeController.DateFormat
+import upickle.default._
+import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import javax.inject._
 import play.api.mvc._
 import requests.Response
+import models.Event
+import services.MyLogger
 
+import java.time.{ZoneId, ZonedDateTime}
+import java.time.format.DateTimeFormatter
+
+object HomeController {
+  private val DateFormat = "MM/dd/yyyy"
+}
 @Singleton
 class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
+  private def formatDate(timestamp: String): String = {
+    val zonedDateTime = ZonedDateTime.parse(timestamp)
+    val instant = zonedDateTime.toInstant
 
-  case class Race(
-                   location: String,
-                   country_key: Int,
-                   country_code: String,
-                   country_name: String,
-                   circuit_key: Int,
-                   circuit_short_name: String,
-                   session_type: String,
-                   session_name: String,
-                   date_start: String,
-                   date_end: String,
-                   gmt_offset: String,
-                   session_key: Int,
-                   meeting_key: Int,
-                   year: Int
-                 )
+    DateTimeFormatter
+      .ofPattern(DateFormat)
+      .withZone(ZoneId.systemDefault())
+      .format(instant)
+  }
+  private def buildUri(session: String, year: Int): String = {
+    val baseUrl = "https://api.openf1.org/v1"
+    val route = "/sessions"
+    val query = s"?session_name=${session}&year=${year}"
 
-  def index(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    implicit val raceReads: Reads[Race] = (
-      (JsPath \ "location").read[String] and
-        (JsPath \ "country_key").read[Int] and
-        (JsPath \ "country_code").read[String] and
-        (JsPath \ "country_name").read[String] and
-        (JsPath \ "circuit_key").read[Int] and
-        (JsPath \ "circuit_short_name").read[String] and
-        (JsPath \ "session_type").read[String] and
-        (JsPath \ "session_name").read[String] and
-        (JsPath \ "date_start").read[String] and
-        (JsPath \ "date_end").read[String] and
-        (JsPath \ "gmt_offset").read[String] and
-        (JsPath \ "session_key").read[Int] and
-        (JsPath \ "meeting_key").read[Int] and
-        (JsPath \ "year").read[Int]
-      )(Race.apply _)
+    s"$baseUrl$route$query"
+  }
+  private def formatEvent(event: Event) = {
+    s"""
+       |${event.location} GP ${formatDate(event.date_start)}
+       |  ${event.session_name}
+       |  Session key: ${event.session_key}
+       |""".stripMargin
+  }
 
-    val response: Response = requests.get("https://api.openf1.org/v1/sessions")
-    val data: Bytes = response.data
-    val json: JsValue = Json.parse(data.array)
+  def index(session: String, year: Int): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    val response: Response = requests.get(buildUri(session, year))
+    val json = Json.parse(response.data.array).validate[List[Event]]
 
-    val raceResult = json.validate[List[Race]]
-
-    raceResult match {
+    json match {
       case JsSuccess(race, _) =>
-        race.foreach(event => {
-          println(s"Parsed race: ${event}\n")
-        })
-      case JsError(errors) =>
-        // Failed to parse JSON into a Race object
-        println(s"Failed to parse race: $errors")
-    }
+        val eventJsonList: List[String] = race.map { event =>
+          MyLogger.info(s"${formatEvent(event)}")
+          implicit val eventRw: ReadWriter[Event] = macroRW
+          val json: String = write(event)
+          MyLogger.red(json)
+          json
+        }
+        Ok(Json.arr(eventJsonList))
 
-    Ok("Hello World")
+      case JsError(errors) =>
+        MyLogger.red(s"Failed to parse: $errors")
+        BadRequest("Error with request")
+    }
   }
 }

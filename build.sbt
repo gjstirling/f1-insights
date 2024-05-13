@@ -10,6 +10,7 @@ scalaVersion := "2.13.14"
 libraryDependencies += guice
 libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1" % Test
 libraryDependencies += "com.lihaoyi" %% "requests" % "0.8.0"
+libraryDependencies += "com.lihaoyi" %% "upickle" % "3.2.0"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.gjstirling.controllers._"
