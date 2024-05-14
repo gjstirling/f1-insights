@@ -1,7 +1,6 @@
 package models
 
-import play.api.libs.json.{JsPath, Reads}
-import play.api.libs.functional.syntax._
+import play.api.libs.json.{Json, OFormat}
 
 case class Event(
                   location: String,
@@ -21,20 +20,6 @@ case class Event(
                 )
 
 object Event {
-  implicit val reads: Reads[Event] = (
-    (JsPath \ "location").read[String] and
-      (JsPath \ "country_key").read[Int] and
-      (JsPath \ "country_code").read[String] and
-      (JsPath \ "country_name").read[String] and
-      (JsPath \ "circuit_key").read[Int] and
-      (JsPath \ "circuit_short_name").read[String] and
-      (JsPath \ "session_type").read[String] and
-      (JsPath \ "session_name").read[String] and
-      (JsPath \ "date_start").read[String] and
-      (JsPath \ "date_end").read[String] and
-      (JsPath \ "gmt_offset").read[String] and
-      (JsPath \ "session_key").read[Int] and
-      (JsPath \ "meeting_key").read[Int] and
-      (JsPath \ "year").read[Int]
-    )(Event.apply _)
+  implicit val eventFormat: OFormat[Event] = Json.format[Event]
 }
+
