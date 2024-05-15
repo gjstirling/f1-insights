@@ -12,8 +12,4 @@ libraryDependencies += "org.scalatestplus.play" %% "scalatestplus-play" % "7.0.1
 libraryDependencies += "com.lihaoyi" %% "requests" % "0.8.0"
 libraryDependencies += "com.lihaoyi" %% "upickle" % "3.2.0"
 
-// Adds additional packages into Twirl
-//TwirlKeys.templateImports += "com.gjstirling.controllers._"
-
-// Adds additional packages into conf/routes
-// play.sbt.routes.RoutesKeys.routesImport += "com.gjstirling.binders._"
+libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "5.1.0"

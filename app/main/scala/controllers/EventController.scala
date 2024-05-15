@@ -1,17 +1,23 @@
-package controllers
+package main.scala.controllers
 
-import upickle.default._
-import play.api.libs.json.{JsArray, JsError, JsSuccess, JsValue, Json}
-
-import javax.inject._
+import main.scala.config.MyAppConfig
+import main.scala.models.Event
+import main.scala.repositories.EventRepository
+//import main.scala.repositories.EventRepository
+import play.api.libs.json._
 import play.api.mvc._
 import requests.Response
-import models.Event
-import config.MyAppConfig
 import services.MyLogger
+import upickle.default._
+import play.api.libs.json.{Json, __}
+import scala.concurrent.{ExecutionContext}
+import javax.inject._
 
 @Singleton
-class HomeController @Inject()(val controllerComponents: ControllerComponents, config: MyAppConfig) extends BaseController {
+class EventController @Inject()(implicit executionContext: ExecutionContext,
+                                val controllerComponents: ControllerComponents,
+                                config: MyAppConfig) extends BaseController {
+
   def index(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     val route = "/sessions"
     val queryParams: Map[String, Seq[String]] = request.queryString
@@ -40,4 +46,11 @@ class HomeController @Inject()(val controllerComponents: ControllerComponents, c
         BadRequest("Error with request")
     }
   }
+
+  def dbTest(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    EventRepository()
+
+    Ok("Added item to DB")
+  }
+
 }
