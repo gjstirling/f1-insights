@@ -9,8 +9,11 @@ import requests.Response
 import services.MyLogger
 import upickle.default._
 import play.api.libs.json.{Json, __}
-import scala.concurrent.{ExecutionContext}
+
+import scala.concurrent.ExecutionContext
 import javax.inject._
+
+import scala.concurrent.Future
 
 @Singleton
 class EventController @Inject()(implicit executionContext: ExecutionContext,
@@ -18,44 +21,54 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
                                 val repository: EventRepository,
                                 config: MyAppConfig) extends BaseController {
 
-  def index(): Action[AnyContent] = Action {
-    implicit request: Request[AnyContent] => {
-      val route = "/sessions"
-      val queryParams: Map[String, Seq[String]] = request.queryString
-      val params: Iterable[(String, String)] = queryParams.flatMap {
-        case (key, values) =>
-          values.headOption.map(value => (key, value))
-      }
-      val response: Response = requests.get(config.apiBaseUrl + route, params = params)
-      val json = Json.parse(response.data.array).validate[List[Event]]
+  def raceEvents(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    val route = "/sessions"
+    val params: Iterable[(String, String)] = request.queryString.flatMap {
+      case (key, values) =>
+        values.headOption.map(value => (key, value))
+    }
+    // limiting data to 2024 season
+    val paramsWithYearFilter: Iterable[(String, String)] = params ++ Seq(("year", "2024"))
 
-      json match {
-        case JsSuccess(race, _) =>
-          // Store request body
-          dbTestAll(race)
+    apiRequest[List[Event]](config.apiBaseUrl + route, paramsWithYearFilter).map {
+      case Right(race) =>
+        val eventJsonList: List[String] = race.map { event =>
+          implicit val eventRw: ReadWriter[Event] = macroRW
+          write(event)
+        }
+        // Add data to events collection ?
+        insert(race)
+        val jsonList: List[JsValue] = eventJsonList.map(Json.parse)
+        val jsonArray: JsArray = JsArray(jsonList)
+        Ok(jsonArray)
 
-          val eventJsonList: List[String] = race.map {
-            event =>
-              implicit val eventRw: ReadWriter[Event] = macroRW
-              write(event)
-          }
-          val jsonList: List[JsValue] = eventJsonList.map(Json.parse)
-          val jsonArray: JsArray = JsArray(jsonList)
-          Ok(jsonArray)
-
-        case JsError(errors) =>
-          MyLogger.red(s"Failed to parse: $errors")
-          BadRequest("Error with request")
-      }
+      case Left(errors) =>
+        MyLogger.red(s"Failed to parse: $errors")
+        BadRequest("Error with request")
     }
   }
 
-  def dbTest(event: Event): Unit = {
-    repository.addOneEvent(event)
-  }
+  private def apiRequest[T: Reads](url: String, params: Iterable[(String, String)]): Future[Either[String, T]] = {
+    val response = requests.get(url, params = params)
+    val json = Json.parse(response.data.array)
 
-  def dbTestAll(event: List[Event]): Unit = {
+    json.validate[T] match {
+      case JsSuccess(data, _) => Future.successful(Right(data))
+      case JsError(errors) => Future.successful(Left(errors.mkString(", ")))
+    }
+  }
+  def insert(event: List[Event]): Unit = {
     repository.addAllEvents(event)
   }
 
+  def find(location: String): Seq[Event] = {
+    repository.find(location)
+  }
+
 }
+
+
+// Use later ?
+//  def insert(event: Event): Unit = {
+//    repository.addOneEvent(event)
+//  }

@@ -5,6 +5,7 @@ import main.scala.models.Event
 import org.mongodb.scala.bson.codecs.Macros._
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
+import org.mongodb.scala.model.Filters.equal
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Await
@@ -29,6 +30,13 @@ class EventRepository @Inject()() {
   def addAllEvents(event: List[Event]): Unit = {
     val collection = initializeCollection()
     val result = collection.insertMany(event).toFuture()
+
+    Await.result(result, Duration.Inf)
+  }
+
+  def find(location: String): Seq[Event] = {
+    val collection = initializeCollection()
+    val result = collection.find(equal("location", location)).toFuture()
 
     Await.result(result, Duration.Inf)
   }

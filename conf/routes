@@ -4,7 +4,7 @@
 # ~~~~
 
 #Home
-GET     /                           main.scala.controllers.EventController.index()
+GET     /                           main.scala.controllers.EventController.raceEvents()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
