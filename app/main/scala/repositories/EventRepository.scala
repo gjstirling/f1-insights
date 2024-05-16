@@ -10,33 +10,29 @@ import org.mongodb.scala.model.Filters.equal
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import main.scala.config.{MongoDbConnection, MyAppConfig}
+import org.mongodb.scala.model.Filters._
 
 @Singleton
-class EventRepository @Inject()() {
+class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnection) {
   private def initializeCollection(): MongoCollection[Event] = {
     val codecRegistry = fromRegistries(fromProviders(classOf[Event]), DEFAULT_CODEC_REGISTRY)
-    val mongoClient: MongoClient = MongoClient()
-    val database: MongoDatabase = mongoClient.getDatabase("mydb").withCodecRegistry(codecRegistry)
-    database.getCollection("test")
+    val database: MongoDatabase = dbConnection.client.getDatabase(config.database).withCodecRegistry(codecRegistry)
+    database.getCollection(config.eventsCollection)
   }
-
-  def addOneEvent(event: Event): Unit = {
-    val collection = initializeCollection()
-    val result = collection.insertOne(event).toFuture()
-
-    Await.result(result, Duration.Inf)
-  }
-
-  def addAllEvents(event: List[Event]): Unit = {
+  def addAllEvents(event: Seq[Event]): Unit = {
     val collection = initializeCollection()
     val result = collection.insertMany(event).toFuture()
 
     Await.result(result, Duration.Inf)
   }
 
-  def find(location: String): Seq[Event] = {
+  def find(filters: Map[String, String]): Seq[Event] = {
+    val filterCriteria = filters.map { case (key, value) => equal(key, value) }
+    val combinedFilter = and(filterCriteria.toSeq: _*)
+
     val collection = initializeCollection()
-    val result = collection.find(equal("location", location)).toFuture()
+    val result = collection.find(combinedFilter).toFuture()
 
     Await.result(result, Duration.Inf)
   }

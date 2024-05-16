@@ -21,4 +21,7 @@ import javax.inject.Singleton
 @Singleton
 class MyAppConfig(){
   val apiBaseUrl = "https://api.openf1.org/v1"
+
+  val database = "mydb"
+  val eventsCollection = "test"
 }

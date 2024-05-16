@@ -6,5 +6,9 @@
 #Home
 GET     /                           main.scala.controllers.EventController.raceEvents()
 
+# For this route we control the Session name, however need params for the driver to get their qualfying times
+# For now just return all qualfyin session data for a given driver
+GET     /quali           main.scala.controllers.EventController.getDriverQualifyingData()
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
