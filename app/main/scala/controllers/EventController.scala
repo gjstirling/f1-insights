@@ -5,7 +5,6 @@ import main.scala.models.Event
 import main.scala.repositories.EventRepository
 import play.api.libs.json._
 import play.api.mvc._
-import requests.Response
 import services.MyLogger
 import upickle.default._
 import play.api.libs.json.{Json, __}
@@ -37,7 +36,7 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
   }
 
 
-  def raceEvents: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def findAll: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val route = "/sessions"
     val params = extractParams(request)
     // limiting data to 2024 season
@@ -45,13 +44,17 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
 
     apiRequest[List[Event]](config.apiBaseUrl + route, paramsWithYearFilter).map {
       case Right(race) =>
-        val eventJsonList: List[String] = race.map { event =>
-          implicit val eventRw: ReadWriter[Event] = macroRW
-          write(event)
+        implicit val eventRw: ReadWriter[Event] = macroRW
+
+        // Filter out by session Key
+        val eventList: List[Event] = race.flatMap { event =>
+          if (repository.hasSession(event.session_key)) None
+          else Some(event)
         }
-        // Add data to events collection ?
-        insert(race)
-        val jsonList: List[JsValue] = eventJsonList.map(Json.parse)
+        repository.addAllEvents(eventList)
+
+        val stringList = eventList.map { event => write(event) }
+        val jsonList: List[JsValue] = stringList.map(Json.parse)
         val jsonArray: JsArray = JsArray(jsonList)
         Ok(jsonArray)
 
@@ -63,9 +66,7 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
 
   def getDriverQualifyingData: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Iterable[(String, String)] = extractParams(request)
-
     val locationParam: Option[String] = params.find(_._1 == "location").map(_._2)
-    val session_type = "Qualifying"
 
     locationParam match {
       case Some(location) =>
@@ -73,17 +74,9 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
         val applyQualifyingFilter = params ++ Seq(("session_type", "Qualifying"))
         val search = repository.find(applyQualifyingFilter.toMap)
 
-        Future.successful(Ok(search.toString()))
+        Future.successful(Ok(search.headOption.toString))
       case None =>
         Future.successful(BadRequest("No parameter for location found"))
     }
-  }
-
-  def insert(event: Seq[Event]): Unit = {
-    repository.addAllEvents(event)
-  }
-
-  def find(filters: Map[String, String]): Seq[Event] = {
-    repository.find(filters)
   }
 }

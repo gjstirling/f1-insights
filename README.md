@@ -6,4 +6,8 @@ This is a RESTful API built utilising the Scala Play framework, Scala's Mongo DB
 
 Clone down this repository. You will need `Scala` and `sbt` installed globally on your machine.  
 
+## TODO list: 
+
+Encapsulate connecting to collections into its 
+
 ## Learning/Reflections: 

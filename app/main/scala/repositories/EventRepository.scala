@@ -15,13 +15,13 @@ import org.mongodb.scala.model.Filters._
 
 @Singleton
 class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnection) {
-  private def initializeCollection(): MongoCollection[Event] = {
+  private def initialiseCollection(): MongoCollection[Event] = {
     val codecRegistry = fromRegistries(fromProviders(classOf[Event]), DEFAULT_CODEC_REGISTRY)
     val database: MongoDatabase = dbConnection.client.getDatabase(config.database).withCodecRegistry(codecRegistry)
     database.getCollection(config.eventsCollection)
   }
   def addAllEvents(event: Seq[Event]): Unit = {
-    val collection = initializeCollection()
+    val collection = initialiseCollection()
     val result = collection.insertMany(event).toFuture()
 
     Await.result(result, Duration.Inf)
@@ -31,9 +31,15 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
     val filterCriteria = filters.map { case (key, value) => equal(key, value) }
     val combinedFilter = and(filterCriteria.toSeq: _*)
 
-    val collection = initializeCollection()
+    val collection = initialiseCollection()
     val result = collection.find(combinedFilter).toFuture()
 
     Await.result(result, Duration.Inf)
   }
+
+  def hasSession(sessionKey: Int): Boolean = {
+    sessionKey == 9468
+  }
+
+
 }
