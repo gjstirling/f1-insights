@@ -24,12 +24,13 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
 
   def insertEvents(events: Seq[Event]): Unit = {
     val collection = initialiseCollection()
+    // Find events currently stored in collection
     val sessionKeysToCheck = events.map(_.session_key)
     val query = in("session_key", sessionKeysToCheck: _*)
     val futureResults = collection.find(query).toFuture()
     val sessionKeysInDb = Await.result(futureResults, 10.seconds)
 
-    // Filter list based on what is stored in DB
+    // Filter list based on what is already stored in DB
     val existingSessionKeys = sessionKeysInDb.map(_.session_key).toSet
     val eventsToInsert = events.filterNot(event => existingSessionKeys.contains(event.session_key))
 
