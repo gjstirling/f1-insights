@@ -38,11 +38,7 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
         implicit val eventRw: ReadWriter[Event] = macroRW
 
         // Filter out by session Key
-        val eventList: List[Event] = race.flatMap { event =>
-          if (repository.hasSession(event.session_key)) None
-          else Some(event)
-        }
-        repository.addAllEvents(eventList)
+        repository.insertEvents(race)
 
         val stringList = race.map { event => write(event) }
         val jsonList: List[JsValue] = stringList.map(Json.parse)
