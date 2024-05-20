@@ -18,16 +18,8 @@ import scala.concurrent.Future
 class EventController @Inject()(implicit executionContext: ExecutionContext,
                                 val controllerComponents: ControllerComponents,
                                 val repository: EventRepository,
+                                val f1Api: F1OpenApiController,
                                 config: MyAppConfig) extends BaseController {
-  private def apiRequest[T: Reads](url: String, params: Iterable[(String, String)]): Future[Either[String, T]] = {
-    val response = requests.get(url, params = params)
-    val json = Json.parse(response.data.array)
-
-    json.validate[T] match {
-      case JsSuccess(data, _) => Future.successful(Right(data))
-      case JsError(errors) => Future.successful(Left(errors.mkString(", ")))
-    }
-  }
   private def extractParams(request: Request[AnyContent]): Iterable[(String, String)] = {
     request.queryString.flatMap {
       case (key, values) =>
@@ -35,14 +27,13 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
     }
   }
 
-
   def findAll: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val route = "/sessions"
     val params = extractParams(request)
     // limiting data to 2024 season
     val paramsWithYearFilter: Iterable[(String, String)] = params ++ Seq(("year", "2024"))
 
-    apiRequest[List[Event]](config.apiBaseUrl + route, paramsWithYearFilter).map {
+    f1Api.lookup[List[Event]](route, paramsWithYearFilter).map {
       case Right(race) =>
         implicit val eventRw: ReadWriter[Event] = macroRW
 
@@ -53,7 +44,7 @@ class EventController @Inject()(implicit executionContext: ExecutionContext,
         }
         repository.addAllEvents(eventList)
 
-        val stringList = eventList.map { event => write(event) }
+        val stringList = race.map { event => write(event) }
         val jsonList: List[JsValue] = stringList.map(Json.parse)
         val jsonArray: JsArray = JsArray(jsonList)
         Ok(jsonArray)
