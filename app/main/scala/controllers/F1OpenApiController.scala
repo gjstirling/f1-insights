@@ -3,8 +3,9 @@ package main.scala.controllers
 import main.scala.config.MyAppConfig
 import play.api.libs.json.{JsError, JsSuccess, Json, Reads, __}
 import play.api.mvc.{BaseController, ControllerComponents}
-
 import com.google.inject.{Inject, Singleton}
+import services.Services.MyLogger
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
