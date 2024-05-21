@@ -26,7 +26,7 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
     val sessionKeysToCheck = events.map(_.session_key)
     val query = in("session_key", sessionKeysToCheck: _*)
     val futureResults = collection.find(query).toFuture()
-    val sessionKeysInDb = Await.result(futureResults, 10.seconds)
+    val sessionKeysInDb = Await.result(futureResults, Duration.Inf)
 
     // Filter list based on what is already stored in DB
     val existingSessionKeys = sessionKeysInDb.map(_.session_key).toSet

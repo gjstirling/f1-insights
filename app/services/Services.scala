@@ -31,4 +31,5 @@ object Services {
     val jsonList: List[JsValue] = list.map(event => Json.parse(write(event)))
     JsArray(jsonList)
   }
+
 }

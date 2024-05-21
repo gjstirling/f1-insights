@@ -1,25 +1,21 @@
 package main.scala.controllers
 
-import main.scala.config.MyAppConfig
 import main.scala.models.Event
 import main.scala.repositories.EventRepository
 import play.api.libs.json._
 import play.api.mvc._
 import services.Services.{MyLogger, convertToJsonArray}
 import upickle.default._
-import play.api.libs.json.{Json, __}
 import services.Services
-
 import scala.concurrent.ExecutionContext
 import javax.inject._
-import scala.concurrent.Future
 
 @Singleton
-class EventController @Inject()(implicit executionContext: ExecutionContext,
-                                val controllerComponents: ControllerComponents,
-                                val repository: EventRepository,
-                                val f1Api: F1OpenApiController,
-                                config: MyAppConfig) extends BaseController {
+class EventController @Inject()(
+                                 val controllerComponents: ControllerComponents,
+                                 val repository: EventRepository,
+                                 val f1Api: F1OpenApiController
+                               )(implicit val executionContext: ExecutionContext) extends BaseController {
   def findAll: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val route = "/sessions"
     val params = Services.extractParams(request)
