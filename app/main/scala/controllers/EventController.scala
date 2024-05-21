@@ -33,7 +33,7 @@ class EventController @Inject()(
         Ok(jsonArray)
 
       case Left(errors) =>
-        MyLogger.red(s"Failed to parse: $errors")
+        // MyLogger.red(s"Failed to parse: $errors")
         BadRequest("[EventController][findAll]:      Error with request")
     }
   }

@@ -14,9 +14,7 @@ import play.api.test._
 import play.api.test.Helpers._
 import scala.concurrent.Future
 
-
 class EventControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar {
-
   // controller instance for tests and mocks
   val mockEventRepository: EventRepository = mock[EventRepository]
   val mockF1OpenApiController: F1OpenApiController = mock[F1OpenApiController]
@@ -27,13 +25,9 @@ class EventControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar 
     f1Api = mockF1OpenApiController
   )(ec)
 
-  "EventController GET" should {
+  "\n[EventController][findAll]" should {
 
-    "This test should pass (assert sbt test works)" in {
-      assert(Set.empty.size === 0)
-    }
-
-    "findAll: Returns a list of race events" in {
+    "return a 200 response and json response" in {
       // Mocks
       when(mockF1OpenApiController.lookup[List[Event]](
         anyString(),
@@ -49,5 +43,23 @@ class EventControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar 
       status(result) mustBe OK
       contentAsJson(result) mustBe jsonResponse
     }
+
+    "return a 400 response (BadRequest) when API call fails" in {
+      // Mocks
+      val errorMessage = "[EventController][findAll]:      Error with request"
+      when(mockF1OpenApiController.lookup[List[Event]](
+        anyString(),
+        any[Iterable[(String, String)]]
+      )(any[Reads[List[Event]]]))
+        .thenReturn(Future.successful(Left("error from API")))
+
+      // act
+      val result = controller.findAll().apply(FakeRequest(GET, "/"))
+
+      // assertions
+      status(result) mustBe BAD_REQUEST
+      contentAsString(result) must include(errorMessage)
+    }
+
   }
 }
