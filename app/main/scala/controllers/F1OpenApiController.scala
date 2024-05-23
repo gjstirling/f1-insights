@@ -10,6 +10,8 @@ import scala.concurrent.{ExecutionContext, Future}
 class F1OpenApiController @Inject()(val controllerComponents: ControllerComponents, apiClient: ApiClient)
                                    (implicit executionContext: ExecutionContext) extends BaseController {
 
+  // change to repository (name)
+
   def lookup[T: Reads](route: String, params: Iterable[(String, String)]): Future[Either[String, T]] = {
     apiClient.get(route, params).map {
       case Right(data) =>

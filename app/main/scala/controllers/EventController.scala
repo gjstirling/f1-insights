@@ -4,7 +4,8 @@ import main.scala.models.Event
 import main.scala.repositories.EventRepository
 import play.api.libs.json._
 import play.api.mvc._
-import services.Services.{MyLogger, convertToJsonArray}
+import services.Services.convertToJsonArray
+import services.MyLogger
 import upickle.default._
 import services.Services
 import scala.concurrent.ExecutionContext

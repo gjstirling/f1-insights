@@ -6,11 +6,14 @@ import org.mongodb.scala.bson.codecs.Macros.createCodecProvider
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.model.Filters.equal
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.Await
-import scala.concurrent.duration.{Duration, DurationInt}
+import scala.concurrent.duration.Duration
 import main.scala.config.{MongoDbConnection, MyAppConfig}
 import org.mongodb.scala.model.Filters._
+import org.mongodb.scala.model._
+import services.MyLogger
 
 @Singleton
 class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnection) {
@@ -22,20 +25,18 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
 
   def insertEvents(events: Seq[Event]): Unit = {
     val collection = initialiseEventsCollection()
-    // Find events currently stored in collection
-    val sessionKeysToCheck = events.map(_.session_key)
-    val query = in("session_key", sessionKeysToCheck: _*)
-    val futureResults = collection.find(query).toFuture()
-    val sessionKeysInDb = Await.result(futureResults, Duration.Inf)
-
-    // Filter list based on what is already stored in DB
-    val existingSessionKeys = sessionKeysInDb.map(_.session_key).toSet
-    val eventsToInsert = events.filterNot(event => existingSessionKeys.contains(event.session_key))
-
-    if (eventsToInsert.nonEmpty) {
-      val result = collection.insertMany(eventsToInsert).toFuture()
-      Await.result(result, Duration.Inf)
+    // Prepare a list of bulk write operations
+    val bulkWrites = events.map { event =>
+      val filter = Filters.eq("session_key", event.session_key)
+      val replaceOneModel = ReplaceOneModel(filter, event, ReplaceOptions().upsert(true))
+      ReplaceOneModel(filter, event, ReplaceOptions().upsert(true))
     }
+    // perform bulk write to DB
+    val bulkWriteResultFuture = collection.bulkWrite(bulkWrites).toFuture()
+    // Wait for the bulk write operation to complete
+    val bulkWriteResult = Await.result(bulkWriteResultFuture, Duration.Inf)
+    // See the result in the console
+    MyLogger.info(s"Inserted ${bulkWriteResult.getInsertedCount} events.")
   }
 
   def find(filters: Map[String, String]): Seq[Event] = {
@@ -47,6 +48,4 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
 
     Await.result(result, Duration.Inf)
   }
-
-
 }

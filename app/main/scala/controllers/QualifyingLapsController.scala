@@ -3,13 +3,12 @@ package main.scala.controllers
 import main.scala.config.MyAppConfig
 import main.scala.repositories.EventRepository
 import play.api.mvc._
-import services.Services.{MyLogger, convertToJsonArray}
+import services.Services.convertToJsonArray
+import services.MyLogger
 import upickle.default._
 import main.scala.models.{LapData, QualifyingLaps}
-import play.api.libs.json.Format.GenericFormat
-import play.api.libs.json.OFormat.oFormatFromReadsAndOWrites
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import javax.inject._
 import services.Services
 
