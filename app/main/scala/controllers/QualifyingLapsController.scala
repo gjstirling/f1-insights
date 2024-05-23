@@ -14,11 +14,10 @@ import services.Services
 
 
 @Singleton
-class QualifyingLapsController @Inject()(implicit executionContext: ExecutionContext,
+class QualifyingLapsController @Inject()(
                                          val controllerComponents: ControllerComponents,
-                                         val repository: EventRepository,
                                          val f1Api: F1OpenApi,
-                                         config: MyAppConfig) extends BaseController {
+                                         config: MyAppConfig)(implicit executionContext: ExecutionContext) extends BaseController {
 
   private def sortAndFilterLaps(laps: List[QualifyingLaps]): List[QualifyingLaps] = {
     val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
@@ -54,7 +53,7 @@ class QualifyingLapsController @Inject()(implicit executionContext: ExecutionCon
           Ok(jsonArray)
 
         case Left(errors) =>
-          MyLogger.red(s"[QualifyingLapsController][find]:     Error with request: $errors")
+          //MyLogger.red(s"[QualifyingLapsController][find]:     Error with request: $errors")
           BadRequest("Error with request")
       }
   }
