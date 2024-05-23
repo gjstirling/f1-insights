@@ -1,6 +1,6 @@
 package controllers
 
-import main.scala.controllers.F1OpenApiController
+import main.scala.repositories.F1OpenApi
 import services.ApiClient
 import play.api.mvc.ControllerComponents
 import play.api.test.Helpers.stubControllerComponents
@@ -24,7 +24,7 @@ class F1OpenApiControllerSpec extends AsyncFlatSpec with Matchers {
   implicit val mockResponseReads: Reads[MockResponse] = Json.reads[MockResponse]
   val mockApiClient = new MockApiClient()
   val controllerComponents: ControllerComponents = stubControllerComponents()
-  val controller = new F1OpenApiController(controllerComponents, mockApiClient)
+  val controller = new F1OpenApi(controllerComponents, mockApiClient)
 
   "\n[F1OpenApiController][lookup]" should "return mock data on success" in {
     controller.lookup[MockResponse]("/mock_route", Seq.empty).map {
@@ -43,7 +43,7 @@ class F1OpenApiControllerSpec extends AsyncFlatSpec with Matchers {
         Future.successful(Left("API call failed"))
       }
     }
-    val failingController = new F1OpenApiController(controllerComponents, mockApiClientWithError)
+    val failingController = new F1OpenApi(controllerComponents, mockApiClientWithError)
 
     // act and asser
     failingController.lookup[MockResponse]("/mock_route", Seq.empty).map {

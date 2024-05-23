@@ -2,9 +2,9 @@ package controllers
 
 import base.ControllersSpecWithGuiceApp
 import base.TestData._
-import main.scala.controllers.{EventController, F1OpenApiController}
+import main.scala.controllers.EventController
 import main.scala.models.Event
-import main.scala.repositories.EventRepository
+import main.scala.repositories.{EventRepository, F1OpenApi}
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.matchers.must.Matchers._
@@ -17,7 +17,7 @@ import scala.concurrent.Future
 class EventControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar {
   // controller instance for tests and mocks
   val mockEventRepository: EventRepository = mock[EventRepository]
-  val mockF1OpenApiController: F1OpenApiController = mock[F1OpenApiController]
+  val mockF1OpenApiController: F1OpenApi = mock[F1OpenApi]
 
   val controller = new EventController(
     controllerComponents = mockMcc,

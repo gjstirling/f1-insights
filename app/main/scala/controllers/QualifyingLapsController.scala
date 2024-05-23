@@ -54,8 +54,8 @@ class QualifyingLapsController @Inject()(implicit executionContext: ExecutionCon
           Ok(jsonArray)
 
         case Left(errors) =>
-          MyLogger.red(s"Failed to parse: $errors")
-          BadRequest("[QualifyingLapsController][find]:     Error with request")
+          MyLogger.red(s"[QualifyingLapsController][find]:     Error with request: $errors")
+          BadRequest("Error with request")
       }
   }
 }
