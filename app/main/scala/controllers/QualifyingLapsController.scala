@@ -1,7 +1,7 @@
 package main.scala.controllers
 
 import main.scala.config.MyAppConfig
-import main.scala.repositories.EventRepository
+import main.scala.repositories.{EventRepository, F1OpenApi}
 import play.api.mvc._
 import services.Services.convertToJsonArray
 import services.MyLogger
@@ -17,7 +17,7 @@ import services.Services
 class QualifyingLapsController @Inject()(implicit executionContext: ExecutionContext,
                                          val controllerComponents: ControllerComponents,
                                          val repository: EventRepository,
-                                         val f1Api: F1OpenApiController,
+                                         val f1Api: F1OpenApi,
                                          config: MyAppConfig) extends BaseController {
 
   private def sortAndFilterLaps(laps: List[QualifyingLaps]): List[QualifyingLaps] = {

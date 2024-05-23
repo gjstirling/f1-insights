@@ -1,16 +1,15 @@
-package main.scala.controllers
+package main.scala.repositories
 
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, JsSuccess, Json, Reads}
 import play.api.mvc.{BaseController, ControllerComponents}
-import com.google.inject.{Inject, Singleton}
 import services.ApiClient
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class F1OpenApiController @Inject()(val controllerComponents: ControllerComponents, apiClient: ApiClient)
+class F1OpenApi @Inject()(val controllerComponents: ControllerComponents, apiClient: ApiClient)
                                    (implicit executionContext: ExecutionContext) extends BaseController {
-
-  // change to repository (name)
 
   def lookup[T: Reads](route: String, params: Iterable[(String, String)]): Future[Either[String, T]] = {
     apiClient.get(route, params).map {
