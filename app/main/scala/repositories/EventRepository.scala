@@ -17,14 +17,9 @@ import services.MyLogger
 
 @Singleton
 class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnection) {
-  private def initialiseEventsCollection(): MongoCollection[Event] = {
-    val codecRegistry = fromRegistries(fromProviders(classOf[Event]), DEFAULT_CODEC_REGISTRY)
-    val database: MongoDatabase = dbConnection.client.getDatabase(config.database).withCodecRegistry(codecRegistry)
-    database.getCollection(config.eventsCollection)
-  }
 
   def insertEvents(events: Seq[Event]): Unit = {
-    val collection = initialiseEventsCollection()
+    val collection = dbConnection.connect(config.database, config.eventsCollection)
     // Prepare a list of bulk write operations
     val bulkWrites = events.map { event =>
       val filter = Filters.eq("session_key", event.session_key)
@@ -43,7 +38,7 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
     val filterCriteria = filters.map { case (key, value) => equal(key, value) }
     val combinedFilter = and(filterCriteria.toSeq: _*)
 
-    val collection = initialiseEventsCollection()
+    val collection = dbConnection.connect(config.database, config.eventsCollection)
     val result = collection.find(combinedFilter).toFuture()
 
     Await.result(result, Duration.Inf)

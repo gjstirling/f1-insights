@@ -1,3 +1,5 @@
+package repositories
+
 import org.scalatest.matchers.should.Matchers._
 import org.scalatest.concurrent.ScalaFutures._
 import org.scalatestplus.mockito.MockitoSugar

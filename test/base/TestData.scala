@@ -21,7 +21,7 @@ object TestData {
     circuit_short_name = "Monaco Circuit"
   )
 
-  val qualifyingLap = QualifyingLaps(
+  val qualifyingLap: QualifyingLaps = QualifyingLaps(
     date_start = "2024-05-18T14:04:14.304000+00:00",
     driver_number = 55,
     duration_sector_1 = Some(24.699),
@@ -35,7 +35,7 @@ object TestData {
     st_speed = 292
   )
 
-  val qualiData = LapData(
+  val qualiData: LapData = LapData(
     lap_number = 2,
     sector_1 = Some(24.699),
     sector_2 = Some(26.612),
