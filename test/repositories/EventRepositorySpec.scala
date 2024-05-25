@@ -1,30 +1,28 @@
 package repositories
 
-import org.scalatest.matchers.should.Matchers._
-import org.scalatest.concurrent.ScalaFutures._
-import org.scalatestplus.mockito.MockitoSugar
-import org.mockito.Mockito._
-import org.mongodb.scala.MongoCollection
-import org.mongodb.scala.model.{Filters, ReplaceOneModel, ReplaceOptions}
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
+import base.ControllersSpecWithGuiceApp
+import base.TestData._
 import main.scala.models.Event
-import main.scala.config.{MyAppConfig}
-import main.scala.config.MongoDbConnection
+import main.scala.config.{MongoDbConnection, MyAppConfig}
+import main.scala.repositories.EventRepository
+import org.mongodb.scala.MongoCollection
+import org.scalatestplus.mockito.MockitoSugar
 
-class EventRepositorySpec extends org.scalatest.freespec.AnyFreeSpec with MockitoSugar {
 
-  "EventRepository" - {
-    "insertEvents" - {
-      "should insert events into the database" in {
-          //TODO
-      }
+class EventRepositorySpec extends ControllersSpecWithGuiceApp with MockitoSugar {
 
-      "find" - {
-        "should find events based on given filters" in {
-          //TODO
-        }
-      }
+  // Mocking dependencies
+  val mockMyAppConfig: MyAppConfig = mock[MyAppConfig]
+  val mockDbConnection: MongoDbConnection = mock[MongoDbConnection]
+  val mockCollection: MongoCollection[Event] = mock[MongoCollection[Event]]
+
+  val repository = new EventRepository(
+    mockMyAppConfig, mockDbConnection
+  )
+
+  "EventRepository" should {
+    "find events based on given filters" in {
+      // Mocking configuration values
     }
   }
 }

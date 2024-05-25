@@ -8,9 +8,10 @@ import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistr
 import org.mongodb.scala.model.Filters.equal
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
 import main.scala.config.{MongoDbConnection, MyAppConfig}
+import org.mongodb.scala.bson.conversions
 import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model._
 import services.MyLogger
@@ -34,13 +35,13 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
     MyLogger.info(s"Inserted ${bulkWriteResult.getInsertedCount} events.")
   }
 
-  def find(filters: Map[String, String]): Seq[Event] = {
-    val filterCriteria = filters.map { case (key, value) => equal(key, value) }
-    val combinedFilter = and(filterCriteria.toSeq: _*)
-
+  def find(filters: Map[String, String]): Future[Seq[Event]] = {
     val collection = dbConnection.connect(config.database, config.eventsCollection)
-    val result = collection.find(combinedFilter).toFuture()
 
-    Await.result(result, Duration.Inf)
+
+    val filterCriteria = filters.map { case (key, value) => equal(key, value) }
+    val combinedFilter: conversions.Bson = and(filterCriteria.toSeq: _*)
+
+    collection.find(combinedFilter).toFuture()
   }
 }
