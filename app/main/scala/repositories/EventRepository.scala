@@ -2,9 +2,6 @@ package main.scala.repositories
 
 import org.mongodb.scala._
 import main.scala.models.Event
-import org.mongodb.scala.bson.codecs.Macros.createCodecProvider
-import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
-import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.model.Filters.equal
 
 import javax.inject.{Inject, Singleton}
@@ -20,7 +17,7 @@ import services.MyLogger
 class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnection) {
 
   def insertEvents(events: Seq[Event]): Unit = {
-    val collection = dbConnection.connect(config.database, config.eventsCollection)
+    val collection = dbConnection.connect[Event](config.database, config.eventsCollection)
     // Prepare a list of bulk write operations
     val bulkWrites = events.map { event =>
       val filter = Filters.eq("session_key", event.session_key)
@@ -36,7 +33,7 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
   }
 
   def find(filters: Map[String, String]): Future[Seq[Event]] = {
-    val collection = dbConnection.connect(config.database, config.eventsCollection)
+    val collection = dbConnection.connect[Event](config.database, config.eventsCollection)
 
 
     val filterCriteria = filters.map { case (key, value) => equal(key, value) }

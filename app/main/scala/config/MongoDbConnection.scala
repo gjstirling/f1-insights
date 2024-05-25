@@ -13,11 +13,11 @@ import javax.inject.Singleton
 class MongoDbConnection {
   private val client: MongoClient = MongoClient()
 
-  def connect(db: String, collection: String): MongoCollection[Event] = {
-    val codec = Macros.createCodecProvider[Event]()
+  def connect[T](db: String, collection: String): MongoCollection[T] = {
+    val codec = Macros.createCodecProvider[T]()
 
     val codecRegistry = fromRegistries(fromProviders(codec), DEFAULT_CODEC_REGISTRY)
     val database: MongoDatabase = client.getDatabase(db).withCodecRegistry(codecRegistry)
-    database.getCollection[Event](collection)
+    database.getCollection[T](collection)
   }
 }
