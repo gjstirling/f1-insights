@@ -20,6 +20,8 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
 
   "[QualifyingLapsController][find]" should {
 
+    val query = "/quali?driver_last_name=Sainz&event_name=Imola"
+
     "return a 200 response and JSON response" in {
       // Mocks
       when(mockF1OpenApiController.lookup[List[QualifyingLaps]](
@@ -29,7 +31,7 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
         .thenReturn(Future.successful(Right(sampleApiResponse)))
 
       // Act
-      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, "/quali?driver_last_name=Sainz&event_name=Imola"))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, query))
 
       // Assertions
       status(result) mustBe OK
@@ -45,7 +47,7 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
         .thenReturn(Future.successful(Left("Error with request")))
 
       // act
-      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, "/quali?driver_last_name=Sainz&event_name=Imola"))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, query))
 
       // assertions
       status(result) mustBe BAD_REQUEST
