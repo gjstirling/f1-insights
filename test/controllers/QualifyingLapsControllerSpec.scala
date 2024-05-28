@@ -2,10 +2,8 @@ package controllers
 
 import base.ControllersSpecWithGuiceApp
 import base.TestData._
-import main.scala.config.MyAppConfig
 import main.scala.controllers.QualifyingLapsController
-import main.scala.models.{Event, LapData, QualifyingLaps}
-import main.scala.repositories.F1OpenApi
+import main.scala.models.QualifyingLaps
 import org.mockito.ArgumentMatchers._
 import org.mockito.Mockito._
 import org.scalatest.matchers.must.Matchers._
@@ -18,9 +16,6 @@ import scala.concurrent.Future
 
 class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar {
   // Mock instances for dependencies
-  val mockF1OpenApiController: F1OpenApi = mock[F1OpenApi]
-  val mockMyAppConfig: MyAppConfig = mock[MyAppConfig]
-
   val controller = new QualifyingLapsController(mockMcc, mockF1OpenApiController, mockMyAppConfig)
 
   "[QualifyingLapsController][find]" should {

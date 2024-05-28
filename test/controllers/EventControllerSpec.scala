@@ -16,9 +16,6 @@ import scala.concurrent.Future
 
 class EventControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar {
   // controller instance for tests and mocks
-  val mockEventRepository: EventRepository = mock[EventRepository]
-  val mockF1OpenApiController: F1OpenApi = mock[F1OpenApi]
-
   val controller = new EventController(
     controllerComponents = mockMcc,
     repository = mockEventRepository,
