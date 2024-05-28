@@ -8,7 +8,8 @@ object MyLocalRepo {
     "Suzuka" -> "9492",
     "Shanghai" -> "9664",
     "Miami" -> "9498",
-    "Imola" -> "9511"
+    "Imola" -> "9511",
+    "Monaco" -> "9519"
   )
 
   val lastNameToRaceNumberMap: Map[String, String] = Map(

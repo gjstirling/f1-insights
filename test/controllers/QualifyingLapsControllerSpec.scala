@@ -34,7 +34,7 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
         .thenReturn(Future.successful(Right(sampleApiResponse)))
 
       // Act
-      val result = controller.find().apply(FakeRequest(GET, "/quali"))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, "/quali?driver_last_name=Sainz&event_name=Imola"))
 
       // Assertions
       status(result) mustBe OK
@@ -50,7 +50,7 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
         .thenReturn(Future.successful(Left("Error with request")))
 
       // act
-      val result = controller.find().apply(FakeRequest(GET, "/quali"))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, "/quali?driver_last_name=Sainz&event_name=Imola"))
 
       // assertions
       status(result) mustBe BAD_REQUEST

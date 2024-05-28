@@ -13,7 +13,7 @@ libraryDependencies += "com.lihaoyi" %% "requests" % "0.8.0"
 libraryDependencies += "com.lihaoyi" %% "upickle" % "3.2.0"
 libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "5.1.0"
 
-coverageExcludedPackages := "<empty>;Reverse.*;router;main.scala.config*;.*MyLogger.*;.*MyLocalRepo.*\\.*"
+coverageExcludedPackages := "<empty>;Reverse.*;router;main.scala.config*;.*MyLogger.*;.*MyLocalRepo.*;.*RealApiClient.*\\.*"
 
 
 

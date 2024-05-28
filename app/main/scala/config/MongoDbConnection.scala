@@ -12,7 +12,7 @@ import scala.reflect.ClassTag
 class MongoDbConnection {
   private val client: MongoClient = MongoClient()
 
-  def connect[T: ClassTag](db: String, collection: String, codecProvider: CodecProvider): MongoCollection[T] = {
+  def getCollection[T: ClassTag](db: String, collection: String, codecProvider: CodecProvider): MongoCollection[T] = {
     val codecRegistry = fromRegistries(fromProviders(codecProvider), DEFAULT_CODEC_REGISTRY)
     val database: MongoDatabase = client.getDatabase(db).withCodecRegistry(codecRegistry)
     database.getCollection[T](collection)

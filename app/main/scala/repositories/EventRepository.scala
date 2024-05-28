@@ -19,14 +19,20 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
 
   private lazy val codec = Macros.createCodecProvider[Event]()
 
-  def insertEvents(events: Seq[Event]): Unit = {
-    val collection = dbConnection.connect[Event](config.database, config.eventsCollection, codec)
-    // Prepare a list of bulk write operations
-    val bulkWrites = events.map { event =>
+  def sessionKeyFilter(events: Seq[Event]): Seq[ReplaceOneModel[Event]] = {
+    // Prepare a list of bulk write operations session key filter
+    events.map { event =>
       val filter = Filters.eq("session_key", event.session_key)
       val replaceOneModel = ReplaceOneModel(filter, event, ReplaceOptions().upsert(true))
       ReplaceOneModel(filter, event, ReplaceOptions().upsert(true))
     }
+  }
+
+  def insertEvents(events: Seq[Event]): Unit = {
+    val bulkWrites = sessionKeyFilter(events)
+
+    // Integration tested
+    val collection = dbConnection.getCollection[Event](config.database, config.eventsCollection, codec)
     // perform bulk write to DB
     val bulkWriteResultFuture = collection.bulkWrite(bulkWrites).toFuture()
     // Wait for the bulk write operation to complete
@@ -36,9 +42,7 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
   }
 
   def find(filters: Map[String, String]): Future[Seq[Event]] = {
-    val collection = dbConnection.connect[Event](config.database, config.eventsCollection, codec)
-
-
+    val collection = dbConnection.getCollection[Event](config.database, config.eventsCollection, codec)
     val filterCriteria = filters.map { case (key, value) => equal(key, value) }
     val combinedFilter: conversions.Bson = and(filterCriteria.toSeq: _*)
 

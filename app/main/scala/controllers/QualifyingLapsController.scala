@@ -1,14 +1,14 @@
 package main.scala.controllers
 
 import main.scala.config.MyAppConfig
-import main.scala.repositories.{EventRepository, F1OpenApi}
+import main.scala.repositories.{EventRepository, F1OpenApi, MyLocalRepo}
 import play.api.mvc._
 import services.Services.convertToJsonArray
 import services.MyLogger
 import upickle.default._
 import main.scala.models.{LapData, QualifyingLaps}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
 import services.Services
 
@@ -35,26 +35,47 @@ class QualifyingLapsController @Inject()(
     }
   }
 
-  def find: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def findByDriverAndEvent: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Map[String, String] = Services.extractParams(request).toMap
     val route = "/laps"
 
-    // check driver number and session key are valid from maps ???
-    // return a custom response
+    val driverNameOpt = params.get("driver_last_name")
+    val eventNameOpt = params.get("event_name")
 
-      f1Api.lookup[List[QualifyingLaps]](route, params).map {
-        case Right(listOfLaps) =>
-          val hotLaps = sortAndFilterLaps(listOfLaps)
-          implicit val eventRw: ReadWriter[LapData] = macroRW
-          val convertToLaps = hotLaps.map { lap => LapData(lap_number = lap.lap_number, lap.duration_sector_1, lap.duration_sector_2, lap.duration_sector_3, lap.lap_duration) }
+    (driverNameOpt, eventNameOpt) match {
+      case (Some(driverName), Some(eventName)) =>
+        val driverNumberOpt = MyLocalRepo.lastNameToRaceNumberMap.get(driverName)
+        val sessionKeyOpt = MyLocalRepo.circuitSessionKeyMap.get(eventName)
 
-          // Convert the list of maps to a JSON array
-          val jsonArray = convertToJsonArray(convertToLaps)
-          Ok(jsonArray)
+        (driverNumberOpt, sessionKeyOpt) match {
+          case (Some(driverNumber), Some(sessionKey)) =>
+            val apiParams = Map("driver_number" -> driverNumber, "session_key" -> sessionKey)
+            f1Api.lookup[List[QualifyingLaps]](route, apiParams).map {
+              case Right(listOfLaps) =>
+                val hotLaps = sortAndFilterLaps(listOfLaps)
+                implicit val eventRw: ReadWriter[LapData] = macroRW
+                val convertToLaps = hotLaps.map { lap =>
+                  LapData(
+                    lap_number = lap.lap_number,
+                    lap.duration_sector_1,
+                   lap.duration_sector_2,
+                   lap.duration_sector_3,
+                    lap.lap_duration
+                  )
+                }
+                val jsonArray = convertToJsonArray(convertToLaps)
+                Ok(jsonArray)
 
-        case Left(errors) =>
-          //MyLogger.red(s"[QualifyingLapsController][find]:     Error with request: $errors")
-          BadRequest("Error with request")
-      }
+              case Left(errors) =>
+                BadRequest(s"Error with request:  $errors")
+            }
+          case _ =>
+            Future.successful(BadRequest("Error with param values"))
+        }
+
+      case _ =>
+        Future.successful(BadRequest("Error with param keys"))
+    }
   }
+
 }
