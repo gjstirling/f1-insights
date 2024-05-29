@@ -1,7 +1,7 @@
 package base
 
 import main.scala.models.{Event, LapData, QualifyingLaps}
-import play.api.libs.json.{JsValue, Json, Reads}
+import play.api.libs.json.{JsValue, Json}
 
 object TestData {
 
@@ -37,10 +37,10 @@ object TestData {
 
   val qualiData: LapData = LapData(
     lap_number = 2,
-    sector_1 = Some(24.699),
-    sector_2 = Some(26.612),
-    sector_3 = Some(25.664),
-    lap_time = Some(76.975)
+    sector_1 = 24.699,
+    sector_2 = 26.612,
+    sector_3 = 25.664,
+    lap_time = "1m06.975"
   )
 
   val sampleEvents: List[Event] = List(sampleEvent)

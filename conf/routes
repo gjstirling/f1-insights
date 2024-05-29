@@ -5,11 +5,10 @@
 
 #Home
 GET     /                           main.scala.controllers.HomeController.index()
-GET     /events                     main.scala.controllers.EventController.findAll()
-
-# For this route we control the Session name, however need params for the driver to get their qualfying times
-# For now just return all qualfying session data for a given driver
 GET     /quali                      main.scala.controllers.QualifyingLapsController.findByDriverAndEvent()
+
+#TODO Working on route
+#GET     /events                     main.scala.controllers.EventController.findAll()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
