@@ -1,10 +1,9 @@
 package main.scala.controllers
 
 import main.scala.config.MyAppConfig
-import main.scala.repositories.{EventRepository, F1OpenApi, MyLocalRepo}
+import main.scala.repositories.{F1OpenApi, MyLocalRepo}
 import play.api.mvc._
 import services.Services.convertToJsonArray
-import services.MyLogger
 import upickle.default._
 import main.scala.models.{LapData, QualifyingLaps}
 
@@ -55,12 +54,17 @@ class QualifyingLapsController @Inject()(
                 val hotLaps = sortAndFilterLaps(listOfLaps)
                 implicit val eventRw: ReadWriter[LapData] = macroRW
                 val convertToLaps = hotLaps.map { lap =>
+                  // Extract formatting ?
+                  val minutes = if(lap.lap_duration.get > 60.00) 1
+                  val seconds = ((lap.lap_duration.get  - 60) * 1000).round / 1000.toDouble
+                  val totalLapTime = s"${minutes}m$seconds"
+
                   LapData(
                     lap_number = lap.lap_number,
-                    lap.duration_sector_1,
-                   lap.duration_sector_2,
-                   lap.duration_sector_3,
-                    lap.lap_duration
+                    lap.duration_sector_1.getOrElse(0),
+                    lap.duration_sector_2.getOrElse(0),
+                    lap.duration_sector_3.getOrElse(0),
+                    totalLapTime
                   )
                 }
                 val jsonArray = convertToJsonArray(convertToLaps)

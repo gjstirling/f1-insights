@@ -4,10 +4,10 @@ import play.api.libs.json.{JsValue, Json, OFormat, Reads, Writes}
 
 case class LapData(
                     lap_number: Int,
-                    sector_1: Option[Double],
-                    sector_2: Option[Double],
-                    sector_3: Option[Double],
-                    lap_time: Option[Double]
+                    sector_1: Double,
+                    sector_2: Double,
+                    sector_3: Double,
+                    lap_time: String
                   )
 
 object LapData {
