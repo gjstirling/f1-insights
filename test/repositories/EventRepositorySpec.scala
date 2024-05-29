@@ -1,27 +1,22 @@
 package repositories
 
+import base.{ControllersSpecBase, ControllersSpecWithGuiceApp}
 import main.scala.models.Event
 import main.scala.repositories.EventRepository
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.model.{Filters, ReplaceOneModel, ReplaceOptions}
-import org.scalatestplus.mockito.MockitoSugar
-import main.scala.config.{MongoDbConnection, MyAppConfig}
-import org.scalatest.matchers.should.Matchers
-import org.scalatest.wordspec.AnyWordSpec
 import base.TestData.sampleEvents
 
-class EventRepositorySpec extends AnyWordSpec with Matchers with MockitoSugar {
+class EventRepositorySpec extends ControllersSpecWithGuiceApp with ControllersSpecBase {
 
-  // Mocking dependencies
-  val mockMyAppConfig: MyAppConfig = mock[MyAppConfig]
-  val mockDbConnection: MongoDbConnection = mock[MongoDbConnection]
+  // Mocking db connection
   val mockCollection: MongoCollection[Event] = mock[MongoCollection[Event]]
 
   val repository = new EventRepository(
     mockMyAppConfig, mockDbConnection
   )
 
-// Methods Used as no correct equality check even when exactly the same
+  // Methods Used as no correct equality check even when exactly the same
   private def replaceOptionsEqualityCheck(actual: ReplaceOptions, expected: ReplaceOptions): Boolean = {
     actual.isUpsert == expected.isUpsert &&
       actual.getBypassDocumentValidation == expected.getBypassDocumentValidation &&
@@ -59,6 +54,5 @@ class EventRepositorySpec extends AnyWordSpec with Matchers with MockitoSugar {
       act.zip(expected).forall { case (a, e) => replaceOneModelEqualityCheck(a, e) } shouldBe true
     }
   }
-
-  // Unit tests for .find .insertEvents would be mocked throughout so will need to be tested via integration test
+  // Unit tests for .insertEvents would be mocked throughout so will need to be tested via integration test
 }

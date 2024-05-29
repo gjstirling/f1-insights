@@ -35,7 +35,6 @@ class F1OpenApiControllerSpec extends AsyncFlatSpec with Matchers {
     }
   }
 
-  // Simulate an error response
   it should "handle API failure gracefully" in {
     val mockApiClientWithError = new ApiClient {
       override def get(route: String, params: Iterable[(String, String)]): Future[Either[String, Array[Byte]]] = {
@@ -45,12 +44,28 @@ class F1OpenApiControllerSpec extends AsyncFlatSpec with Matchers {
     }
     val failingController = new F1OpenApi(controllerComponents, mockApiClientWithError)
 
-    // act and asser
     failingController.lookup[MockResponse]("/mock_route", Seq.empty).map {
       case Right(_) =>
         fail("Expected API call to fail but it succeeded")
       case Left(error) =>
         error shouldBe "API call failed"
+    }
+  }
+
+  it should "handle JsError when JSON response cannot be parsed" in {
+    val mockApiClientWithInvalidJson = new ApiClient {
+      override def get(route: String, params: Iterable[(String, String)]): Future[Either[String, Array[Byte]]] = {
+        // Return an invalid JSON
+        Future.successful(Right("""{"invalid_key": "invalid_value"}""".getBytes))
+      }
+    }
+    val controllerWithInvalidJson = new F1OpenApi(controllerComponents, mockApiClientWithInvalidJson)
+
+    controllerWithInvalidJson.lookup[MockResponse]("/mock_route", Seq.empty).map {
+      case Right(_) =>
+        fail("Expected JSON parsing to fail but it succeeded")
+      case Left(error) =>
+        error should include("error.path.missing")
     }
   }
 }

@@ -1,6 +1,6 @@
 package base
 
-import main.scala.config.MyAppConfig
+import main.scala.config.{MongoDbConnection, MyAppConfig}
 import main.scala.repositories.{EventRepository, F1OpenApi}
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.{MessagesControllerComponents, Request}
@@ -25,6 +25,7 @@ trait ControllersSpecBase  extends UnitSpec with MockitoSugar with Status {
   val mockEventRepository: EventRepository = mock[EventRepository]
   val mockF1OpenApiController: F1OpenApi = mock[F1OpenApi]
   val mockMyAppConfig: MyAppConfig = mock[MyAppConfig]
+  val mockDbConnection: MongoDbConnection = mock[MongoDbConnection]
 }
 trait UnitSpec extends AnyWordSpecLike with Matchers with GuiceOneAppPerSuite {
   implicit val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]

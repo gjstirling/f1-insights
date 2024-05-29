@@ -18,6 +18,7 @@ import services.MyLogger
 class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnection) {
 
   private lazy val codec = Macros.createCodecProvider[Event]()
+  private lazy val collection = dbConnection.getCollection[Event](config.database, config.eventsCollection, codec)
 
   def sessionKeyFilter(events: Seq[Event]): Seq[ReplaceOneModel[Event]] = {
     // Prepare a list of bulk write operations session key filter
@@ -31,21 +32,11 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
   def insertEvents(events: Seq[Event]): Unit = {
     val bulkWrites = sessionKeyFilter(events)
 
-    // Integration tested
-    val collection = dbConnection.getCollection[Event](config.database, config.eventsCollection, codec)
     // perform bulk write to DB
     val bulkWriteResultFuture = collection.bulkWrite(bulkWrites).toFuture()
     // Wait for the bulk write operation to complete
     val bulkWriteResult = Await.result(bulkWriteResultFuture, Duration.Inf)
     // See the result in the console
     MyLogger.info(s"Inserted ${bulkWriteResult.getInsertedCount} events.")
-  }
-
-  def find(filters: Map[String, String]): Future[Seq[Event]] = {
-    val collection = dbConnection.getCollection[Event](config.database, config.eventsCollection, codec)
-    val filterCriteria = filters.map { case (key, value) => equal(key, value) }
-    val combinedFilter: conversions.Bson = and(filterCriteria.toSeq: _*)
-
-    collection.find(combinedFilter).toFuture()
   }
 }
