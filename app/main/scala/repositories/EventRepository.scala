@@ -2,15 +2,12 @@ package main.scala.repositories
 
 import org.mongodb.scala._
 import main.scala.models.Event
-import org.mongodb.scala.model.Filters.equal
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{Await, Future}
+import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import main.scala.config.{MongoDbConnection, MyAppConfig}
 import org.mongodb.scala.bson.codecs.Macros
-import org.mongodb.scala.bson.conversions
-import org.mongodb.scala.model.Filters._
 import org.mongodb.scala.model._
 import services.MyLogger
 
@@ -35,8 +32,6 @@ class EventRepository @Inject()(config: MyAppConfig, dbConnection: MongoDbConnec
     // perform bulk write to DB
     val bulkWriteResultFuture = collection.bulkWrite(bulkWrites).toFuture()
     // Wait for the bulk write operation to complete
-    val bulkWriteResult = Await.result(bulkWriteResultFuture, Duration.Inf)
-    // See the result in the console
-    MyLogger.info(s"Inserted ${bulkWriteResult.getInsertedCount} events.")
+    Await.result(bulkWriteResultFuture, Duration.Inf)
   }
 }
