@@ -1,8 +1,7 @@
-package main.scala.repositories
+package main.scala.connectors
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, JsSuccess, Json, Reads}
-import services.ApiClient
 
 import scala.concurrent.{ExecutionContext, Future}
 

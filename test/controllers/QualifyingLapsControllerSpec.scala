@@ -16,7 +16,7 @@ import scala.concurrent.Future
 
 class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar {
   // Mock instances for dependencies
-  val controller = new QualifyingLapsController(mockMcc, mockF1OpenApiController, mockMyAppConfig)
+  val controller = new QualifyingLapsController(mockMcc, mockF1OpenApiController)
 
   "[QualifyingLapsController][findByDriverAndEvent]" should {
 

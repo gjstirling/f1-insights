@@ -1,7 +1,6 @@
 package controllers
 
-import main.scala.repositories.F1OpenApi
-import services.ApiClient
+import main.scala.connectors.{ApiClient, F1OpenApi}
 import play.api.libs.json.{Json, Reads}
 import org.scalatest.flatspec.AsyncFlatSpec
 import org.scalatest.matchers.should.Matchers
