@@ -1,22 +1,19 @@
 package main.scala.controllers
 
-import main.scala.config.MyAppConfig
-import main.scala.repositories.{F1OpenApi, MyLocalRepo}
+import main.scala.connectors.F1OpenApi
+import main.scala.models.{LapData, QualifyingLaps}
 import play.api.mvc._
 import services.Services.convertToJsonArray
 import upickle.default._
-import main.scala.models.{LapData, QualifyingLaps}
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
-import services.Services
+import services.{MyLocalRepo, Services}
 
 
 @Singleton
-class QualifyingLapsController @Inject()(
-                                         val controllerComponents: ControllerComponents,
-                                         val f1Api: F1OpenApi,
-                                         config: MyAppConfig)(implicit executionContext: ExecutionContext) extends BaseController {
+class QualifyingLapsController @Inject()(val controllerComponents: ControllerComponents,
+                                         val f1Api: F1OpenApi)(implicit executionContext: ExecutionContext) extends BaseController {
 
   private def sortAndFilterLaps(laps: List[QualifyingLaps]): List[QualifyingLaps] = {
     val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
@@ -34,6 +31,23 @@ class QualifyingLapsController @Inject()(
     }
   }
 
+  private def QualifyingLapsToLapData(qualiLaps: List[QualifyingLaps]): List[LapData] = {
+    qualiLaps.map { lap =>
+      val minutes = if (lap.lap_duration.get > 60.00) 1
+      val seconds = ((lap.lap_duration.get - 60) * 1000).round / 1000.toDouble
+      val totalLapTime = s"${minutes}m$seconds"
+
+      LapData(
+        lap_number = lap.lap_number,
+        lap.duration_sector_1.getOrElse(0),
+        lap.duration_sector_2.getOrElse(0),
+        lap.duration_sector_3.getOrElse(0),
+        totalLapTime
+      )
+    }
+
+  }
+
   def findByDriverAndEvent: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Map[String, String] = Services.extractParams(request).toMap
     val route = "/laps"
@@ -49,25 +63,13 @@ class QualifyingLapsController @Inject()(
         (driverNumberOpt, sessionKeyOpt) match {
           case (Some(driverNumber), Some(sessionKey)) =>
             val apiParams = Map("driver_number" -> driverNumber, "session_key" -> sessionKey)
+
             f1Api.lookup[List[QualifyingLaps]](route, apiParams).map {
               case Right(listOfLaps) =>
                 val hotLaps = sortAndFilterLaps(listOfLaps)
                 implicit val eventRw: ReadWriter[LapData] = macroRW
-                val convertToLaps = hotLaps.map { lap =>
-                  // Extract formatting ?
-                  val minutes = if(lap.lap_duration.get > 60.00) 1
-                  val seconds = ((lap.lap_duration.get  - 60) * 1000).round / 1000.toDouble
-                  val totalLapTime = s"${minutes}m$seconds"
-
-                  LapData(
-                    lap_number = lap.lap_number,
-                    lap.duration_sector_1.getOrElse(0),
-                    lap.duration_sector_2.getOrElse(0),
-                    lap.duration_sector_3.getOrElse(0),
-                    totalLapTime
-                  )
-                }
-                val jsonArray = convertToJsonArray(convertToLaps)
+                val laps = QualifyingLapsToLapData(hotLaps)
+                val jsonArray = convertToJsonArray(laps)
                 Ok(jsonArray)
 
               case Left(errors) =>

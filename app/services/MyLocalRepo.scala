@@ -1,4 +1,4 @@
-package main.scala.repositories
+package services
 
 object MyLocalRepo {
   val circuitSessionKeyMap: Map[String, String] = Map(
