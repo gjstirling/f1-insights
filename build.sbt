@@ -15,5 +15,9 @@ libraryDependencies += "org.mongodb.scala" %% "mongo-scala-driver" % "5.1.0"
 
 coverageExcludedPackages := "<empty>;Reverse.*;router;main.scala.config*;.*MyLogger.*;.*MyLocalRepo.*;.*RealApiClient.*\\.*"
 
+import com.typesafe.sbt.packager.docker._
+dockerChmodType := DockerChmodType.UserGroupWriteExecute
+dockerPermissionStrategy := DockerPermissionStrategy.CopyChown
+
 
 
