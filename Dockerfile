@@ -12,3 +12,6 @@ EXPOSE 8080
 
 # Set the entry point to run the application
 CMD ["bin/f1-insights"]
+
+ARG SECRET
+ENV APPLICATION_SECRET=$SECRET
