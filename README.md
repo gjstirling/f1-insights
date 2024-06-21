@@ -66,6 +66,15 @@ To run tests use the following:  <br/> `sbt clean coverage test` <br/>
 To view the report navigate to the Index.html file located inside the target directory form path: 
 <br/> `/target/scala-2.13/scoverage-report/index.html`
 
-## TODO list: 
+## Docker: 
+- set application secret <br>
+  ```export SECRET="changeme"``` - Insert secret here <br> check is set with ```echo $SECRET```
+- build image: <br>
+```docker buildx build --platform linux/arm64 --build-arg SECRET=$SECRET -t [imageName] --load .```
+- run container: <br>
+```docker run --name [containerName] -d -p 9000:9000 -e PORT=9000 myimage```
+
+
+## TODO list:
 - Deploy /quali event point to AWS server 
 
