@@ -1,6 +1,6 @@
 package base
 
-import main.scala.models.{LapData, QualifyingLaps}
+import main.models.{LapData, QualifyingLaps}
 
 object TestData {
   val qualifyingLap: QualifyingLaps = QualifyingLaps(

@@ -1,8 +1,8 @@
 package it
 
 import base.ControllersSpecBase
+import main.controllers.HomeController
 import play.api.test._
-import main.scala.controllers.HomeController
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout, status, stubControllerComponents}
 

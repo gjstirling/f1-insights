@@ -1,4 +1,5 @@
-package main.scala.config
+package config
+
 object MyAppConfig {
   val apiBaseUrl = "https://api.openf1.org/v1"
 //  val database = "f1insights"

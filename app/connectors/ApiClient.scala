@@ -1,8 +1,8 @@
-package main.scala.connectors
+package connectors
 
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
-import main.scala.config.MyAppConfig._
+import config.MyAppConfig._
 
 trait ApiClient {
   def get(route: String, params: Iterable[(String, String)]): Future[Either[String, Array[Byte]]]
