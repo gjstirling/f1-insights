@@ -1,4 +1,4 @@
-package main.scala.connectors
+package connectors
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, JsSuccess, Json, Reads}

@@ -1,7 +1,7 @@
-package main.scala.controllers
+package controllers
 
-import main.scala.connectors.F1OpenApi
-import main.scala.models.{LapData, QualifyingLaps}
+import connectors.F1OpenApi
+import models.{LapData, QualifyingLaps}
 import play.api.mvc._
 import services.Services.convertToJsonArray
 import upickle.default._

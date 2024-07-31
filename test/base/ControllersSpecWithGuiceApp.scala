@@ -1,6 +1,6 @@
 package base
 
-import main.scala.connectors.F1OpenApi
+import main.connectors.F1OpenApi
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import play.api.mvc.{MessagesControllerComponents, Request}
 import play.api.test.FakeRequest

@@ -2,8 +2,8 @@ package controllers
 
 import base.TestData._
 import base.ControllersSpecWithGuiceApp
-import main.scala.controllers.QualifyingLapsController
-import main.scala.models.QualifyingLaps
+import main.controllers.QualifyingLapsController
+import main.models.QualifyingLaps
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers._
