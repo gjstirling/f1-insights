@@ -1,19 +1,21 @@
-# Use OpenJDK 11 as the base image
-FROM openjdk:11-jdk
+# Stage 1: Build the project with sbt
+FROM openjdk:11-jdk AS builder
 
-# Set the working directory && Copy the application files to the container
+RUN apt-get update && apt-get install -y curl gnupg
+
+RUN echo "deb https://repo.scala-sbt.org/scalasbt/debian all main" > /etc/apt/sources.list.d/sbt.list && \
+    curl -sL "https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x99E82A75642AC823" | apt-key add && \
+    apt-get update && apt-get install -y sbt
+
 WORKDIR /app
-COPY target/universal/stage /app
+COPY . .
+RUN sbt stage
 
-# Expose the port your application runs on
+FROM openjdk:11-jdk
+WORKDIR /app
+COPY --from=builder /app/target/universal/stage /app
+
 EXPOSE 8080
-
-# Set a default value for PORT environment variable
 ENV PORT=8080
 
-# Set the entry point to run the application
 CMD ["bin/f1-insights", "-Dhttp.port=8080"]
-
-# Set $SECRET as an argument in the terminal then pass this to our application (Scala Play Specific)
-ARG SECRET
-ENV APPLICATION_SECRET=$SECRET

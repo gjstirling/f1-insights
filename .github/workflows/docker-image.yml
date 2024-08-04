@@ -1,0 +1,33 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_KEY }}
+
+      - name: Configure Docker for GCP Artifact Registry
+        run: |
+          gcloud auth configure-docker us-docker.pkg.dev
+
+
+      - name: Build and push
+        run: |
+          docker buildx build --platform linux/amd64 \
+            -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/gcr.io/myapp:latest \
+            --push .
+
+      - name: Log out from Docker
+        run: docker logout

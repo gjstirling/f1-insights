@@ -1,18 +1,26 @@
 # F1 Insights API 
 
-An API built utilising the Scala Play framework, Scala's Mongo DB driver and the Akka fork (Pekko). 
+An API built utilising the Scala Play framework, Scala's Mongo DB driver, the Akka fork (Pekko), containerised using Docker and deployed on Google Cloud Platform. 
+
+Hosted on Google Cloud Platform BaseUrl: ```https://gcpimage3-m3p2yzv7ma-uc.a.run.app```
 
 ## Installation and Setup Instructions
 
 Clone down this repository. You will need `Scala` and `sbt` installed globally on your machine.  
 
+```sbt clean compile stage dist```
+
 ## Endpoints
+
+```/``` : A request on this end point will return a basic response "Welcome to the f1 insights API". <br>
 
 ```/quali``` : A request on this end point will return a list of hotlaps when given a driver's last name and 2024 season location short name. If no query params are given it will return with an error response. <br>
 
+```/events``` : A request on this end point will make a request to the open API, confirm it is successful and store the events into a Mongodb Atlas database. It will then return the list of events in JSON as a response <br>
+
 ## Below is an example request: 
 ### Request 
-`localhost:9000/quali?driver_last_name=Sainz&event_name=Monaco`
+`https://gcpimage3-m3p2yzv7ma-uc.a.run.app/quali?driver_last_name=Sainz&event_name=Monaco`
 
 ### Response
 
@@ -76,5 +84,7 @@ To view the report navigate to the Index.html file located inside the target dir
 
 
 ## TODO list:
-- Deploy /quali event point to AWS server 
+- Correct Docker compose configuration to accept ENV variables - currently failing to recieve Application Secret this way
+- Edit events route to schedule a weekly check and update stored data
+- Edit Quali route to store raw qualfying data
 

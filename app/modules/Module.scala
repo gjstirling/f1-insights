@@ -10,7 +10,6 @@ class Module(environment: Environment, configuration: Configuration)
 
   override def configure(): Unit = {
     bind(classOf[ApiClient]).to(classOf[RealApiClient])
-    //bind(classOf[MongoClient]).to(classOf[MongoClientConnection])
   }
 
 }
