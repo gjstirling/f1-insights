@@ -2,7 +2,7 @@
 
 An API built utilising the Scala Play framework, Scala's Mongo DB driver, the Akka fork (Pekko), containerised using Docker and deployed on Google Cloud Platform. 
 
-Hosted on Google Cloud Platform BaseUrl: ```https://gcpimage3-m3p2yzv7ma-uc.a.run.app```
+Hosted on Google Cloud Platform BaseUrl: ```https://myservice-m3p2yzv7ma-uc.a.run.app```
 
 ## Installation and Setup Instructions
 
@@ -20,7 +20,7 @@ Clone down this repository. You will need `Scala` and `sbt` installed globally o
 
 ## Below is an example request: 
 ### Request 
-`https://gcpimage3-m3p2yzv7ma-uc.a.run.app/quali?driver_last_name=Sainz&event_name=Monaco`
+`https://myservice-m3p2yzv7ma-uc.a.run.app/quali?driver_last_name=Sainz&event_name=Monaco`
 
 ### Response
 
