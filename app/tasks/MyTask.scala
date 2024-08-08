@@ -13,7 +13,7 @@ class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents)(im
 
   actorSystem.scheduler.scheduleAtFixedRate(
     initialDelay = 1.seconds,
-    interval = 5.seconds
+    interval = 240.seconds
   ) { () =>
     MyLogger.blue("[MyTask]: IM DOING MY TASK")
     updateEvents.index

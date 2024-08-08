@@ -1,5 +1,6 @@
 package controllers
 
+import config.MyAppConfig.toleranceForLaps
 import connectors.F1OpenApi
 import models.{LapData, QualifyingLaps}
 import play.api.mvc._
@@ -22,7 +23,8 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
     fastestLapOpt match {
       case Some(fastestLap) =>
         val filteredLaps = sortedLaps.filter { lap =>
-          lap.lap_duration.exists(_ <= fastestLap * 1.02)
+          lap.lap_duration.exists(_ <= fastestLap * toleranceForLaps
+          )
         }
         filteredLaps.sortBy(_.lap_number)
 

@@ -25,7 +25,6 @@ class UpdateEvents @Inject()(
     f1Api.lookup[List[Event]](route, paramsWithFilters).map {
       case Right(race) =>
         implicit val eventRw: ReadWriter[Event] = macroRW
-        MyLogger.info("[UpdateEvents][index]:  Updating events list")
         repository.insert(race)
       case Left(errors) =>
         MyLogger.red("Error with job")
