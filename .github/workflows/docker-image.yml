@@ -29,5 +29,14 @@ jobs:
             -t us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/gcr.io/myapp:latest \
             --push .
 
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy myservice \
+            --image us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/gcr.io/myapp:latest \
+            --platform managed \
+            --region us-central1 \
+            --allow-unauthenticated \
+            --set-env-vars DATABASE=f1insights,APPLICATION_SECRET=${{ secrets.APPLICATION_SECRET }},DB_USERNAME=${{ secrets.DB_USERNAME }},DB_PASSWORD=${{ secrets.DB_PASSWORD }}   
+
       - name: Log out from Docker
         run: docker logout
