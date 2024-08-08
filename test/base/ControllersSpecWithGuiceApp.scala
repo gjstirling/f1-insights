@@ -19,7 +19,6 @@ trait ControllersSpecWithGuiceApp extends ControllersSpecBase with GuiceOneAppPe
 }
 
 trait ControllersSpecBase  extends UnitSpec with MockitoSugar with Status {
-  // Store mocks
   val mockF1OpenApiController: F1OpenApi = mock[F1OpenApi]
 }
 trait UnitSpec extends AnyWordSpecLike with Matchers with GuiceOneAppPerSuite {
