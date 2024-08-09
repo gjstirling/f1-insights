@@ -3,11 +3,7 @@ package services
 import models.Event
 import repositories.EventsRepository
 import connectors.F1OpenApi
-import play.api.libs.json._
-import play.api.mvc._
-import services.Services.convertToJsonArray
 import upickle.default._
-import services.{MyLogger, Services}
 
 import scala.concurrent.ExecutionContext
 import javax.inject._
@@ -29,7 +25,6 @@ class UpdateEvents @Inject()(
       case Left(errors) =>
         MyLogger.red("Error with job")
     }
-
 
   }
 }

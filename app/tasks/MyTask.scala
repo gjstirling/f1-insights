@@ -5,19 +5,23 @@ import org.apache.pekko.actor.ActorSystem
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import services.{MyLogger, UpdateEvents}
+import services.{MyLogger, UpdateDrivers, UpdateEvents}
 
-class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents)(implicit executionContext: ExecutionContext) {
+class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents, updateDrivers: UpdateDrivers)(implicit ec: ExecutionContext) {
 
-  actorSystem.log.info("[MyTask]: Initializing MyTask...")
+  actorSystem.log.info("[MyTask]: Initializing MyTasks...")
 
   actorSystem.scheduler.scheduleAtFixedRate(
     initialDelay = 1.seconds,
-    interval = 240.seconds
+    interval = 10.seconds
   ) { () =>
-    MyLogger.blue("[MyTask]: IM DOING MY TASK")
+    MyLogger.blue("[MyTask][updateEvents]: running events job")
     updateEvents.index
+
+    MyLogger.blue("[MyTask][updateDrivers]: running drivers job")
+    updateDrivers.update
   }
 
 }
+
 

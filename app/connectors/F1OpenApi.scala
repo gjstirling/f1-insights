@@ -2,6 +2,7 @@ package connectors
 
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{JsError, JsSuccess, Json, Reads}
+import services.MyLogger
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -15,9 +16,13 @@ class F1OpenApi @Inject()(apiClient: ApiClient)
         val json = Json.parse(data)
         json.validate[T] match {
           case JsSuccess(value, _) => Right(value)
-          case JsError(errors) => Left(errors.mkString(", "))
+          case JsError(errors) =>
+            MyLogger.red("lookup: Right Error with Validation")
+            Left(errors.mkString(", "))
         }
-      case Left(error) => Left(error)
+      case Left(error) =>
+        MyLogger.red("lookup: Left Error type String")
+        Left(error)
     }
   }
 }
