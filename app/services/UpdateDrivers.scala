@@ -6,24 +6,33 @@ import repositories.DriversRepository
 import upickle.default._
 
 import javax.inject._
-import scala.concurrent.ExecutionContext
-
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 class UpdateDrivers @Inject()(
                                val repository: DriversRepository,
                                val f1Api: F1OpenApi
-                                )(implicit ec: ExecutionContext) {
-  def update: Unit = {
+                             )(implicit ec: ExecutionContext) {
+
+  implicit val driverRw: ReadWriter[Drivers] = macroRW
+
+  def update(): Unit = {
     val route = "/drivers"
     val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", "latest"))
+    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](route, paramsWithFilters)
 
-    f1Api.lookup[List[Drivers]](route, paramsWithFilters).map {
-      case Right(driver) =>
-        implicit val driverRw: ReadWriter[Drivers] = macroRW
-        repository.insert(driver)
-      case Left(errors) =>
-        MyLogger.red("Error with job")
+    futureDrivers.onComplete {
+      case Success(Right(drivers)) =>
+        repository.insert(drivers).onComplete {
+          case Success(_) =>
+            MyLogger.blue("Successfully updated drivers.")
+          case Failure(ex) =>
+            MyLogger.red(s"Error inserting drivers into repository: ${ex.getMessage}")
+        }
+      case Success(Left(errors)) =>
+        MyLogger.red(s"Error fetching drivers: $errors")
+      case Failure(ex) =>
+        MyLogger.red(s"Exception occurred while updating drivers: ${ex.getMessage}")
     }
-
   }
 }
