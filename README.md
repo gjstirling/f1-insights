@@ -14,9 +14,9 @@ Clone down this repository. You will need `Scala` and `sbt` installed globally o
 
 ```/``` : A request on this end point will return a basic response "Welcome to the f1 insights API". <br>
 
-```/quali``` : A request on this end point will return a list of hotlaps when given a driver's last name and 2024 season location short name. If no query params are given it will return with an error response. <br>
+```/events``` : A request on this end point will return a list of qualifying events in JSON as a response <br>
 
-```/events``` : A request on this end point will make a request to the open API, confirm it is successful and store the events into a Mongodb Atlas database. It will then return the list of events in JSON as a response <br>
+```/quali``` : A request on this end point will return a list of hotlaps when given a driver's last name and 2024 season location short name. If no query params are given it will return with an error response. A list of qualifying events can be accessed from the /events endpoint <br>
 
 ## Below is an example request: 
 ### Request 
@@ -50,17 +50,7 @@ Clone down this repository. You will need `Scala` and `sbt` installed globally o
 ]
 ```
 
-**request template:** `localhost:9000/quali?driver_last_name=[DriverName]&event_name=[EventName]`
-
-### Driver last names 
-    Verstappen    Sargeant    Ricciardo    Norris    Gasly
-    Perez         Alonso      Leclerc      Stroll    Magnussen
-    Hulkenberg    Tsunoda     Albon        Zhou      Ocon
-    Hamilton      Sainz       Russell      Bottas    Piastri
-
-### Event names 
-    Sakhir      Jeddah    Melbourne    Suzuka   
-    Shanghai    Miami"    Imola        Monaco     
+**request template:** `https://myservice-m3p2yzv7ma-uc.a.run.app/quali?driver_last_name=[DriverName]&event_name=[EventName]`
 
 ## Testing 
 To run tests use the following:  <br/> `sbt clean coverage test` <br/>
@@ -84,7 +74,6 @@ To view the report navigate to the Index.html file located inside the target dir
 
 
 ## TODO list:
-- Correct Docker compose configuration to accept ENV variables - currently failing to recieve Application Secret this way
-- Edit events route to schedule a weekly check and update stored data
-- Edit Quali route to store raw qualfying data
-
+- update quali route to access data from mongodb collection and filter by building a query. 
+- create new route to compare drivers fastest laps and times they were completed
+- Working on dividing these laps into sessions q1 q2 q3 etc.. 

@@ -14,7 +14,8 @@ class EventsController @Inject()(
                                  val repository: EventsRepository
                                )(implicit val executionContext: ExecutionContext) extends BaseController {
   def index: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    val eventsFuture: Future[Seq[Event]] = repository.findAll()
+    val params = Map("session_name" -> "Qualifying")
+    val eventsFuture: Future[Seq[Event]] = repository.findAll(params)
 
     eventsFuture.map { events =>
       val eventsJson: JsValue = Json.toJson(events)
@@ -25,4 +26,5 @@ class EventsController @Inject()(
         InternalServerError("An error occurred while fetching events: " + ex.getMessage)
     }
   }
+
 }
