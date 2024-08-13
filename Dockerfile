@@ -1,4 +1,3 @@
-# Stage 1: Build the project with sbt
 FROM openjdk:11-jdk AS builder
 
 RUN apt-get update && apt-get install -y curl gnupg

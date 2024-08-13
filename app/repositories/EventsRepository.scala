@@ -36,8 +36,15 @@ class EventsRepository @Inject()(dbConnection: MongoDbConnection)(implicit ec: E
     }
   }
 
-  def findAll(): Future[Seq[Event]] =
+  def findAll(params: Map[String, String]): Future[Seq[Event]] = {
+    val query: Document = Document(params.map {
+      case (key, value) => key -> value
+    }.toSeq)
+    val order: Document = Document("date_start" -> -1)
+
     collection
-      .find()
+      .find(query)
+      .sort(order)
       .toFuture()
+  }
 }
