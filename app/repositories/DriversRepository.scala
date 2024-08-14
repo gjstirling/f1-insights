@@ -1,9 +1,8 @@
 package repositories
 
-import config.MongoDbConnection
-import config.MyAppConfig.driverCollection
+import config.{MongoDbConnection, MyAppConfig}
 import models.Drivers
-import org.mongodb.scala._
+import org.bson.codecs.configuration.CodecProvider
 import org.mongodb.scala.bson.codecs.Macros
 import org.mongodb.scala.model._
 import services.MyLogger
@@ -12,11 +11,12 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DriversRepository @Inject()(dbConnection: MongoDbConnection)(implicit ec: ExecutionContext) {
-  private lazy val codec = Macros.createCodecProvider[Drivers]()
-  private lazy val collection = dbConnection.getCollection[Drivers](dbConnection.database, driverCollection, codec)
+class DriversRepository @Inject()(
+                                   dbConnection: MongoDbConnection
+                                 )(implicit ec: ExecutionContext)
+  extends BaseRepository[Drivers](dbConnection, MyAppConfig.driverCollection, DriversRepository.codec) {
 
-  private def sessionKeyFilter(drivers: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
+  private def updateAndUpsert(drivers: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
     drivers.map { driver =>
       val filter = Filters.eq("full_name", driver.full_name)
       ReplaceOneModel(filter, driver, ReplaceOptions().upsert(true))
@@ -24,7 +24,7 @@ class DriversRepository @Inject()(dbConnection: MongoDbConnection)(implicit ec: 
   }
 
   def insert(drivers: Seq[Drivers]): Future[Unit] = {
-    val bulkWrites = sessionKeyFilter(drivers)
+    val bulkWrites = updateAndUpsert(drivers)
 
     collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
       MyLogger.info(s"[DriversRepository][insert]: Bulk write result: " +
@@ -36,3 +36,10 @@ class DriversRepository @Inject()(dbConnection: MongoDbConnection)(implicit ec: 
     }.map(_ => ())
   }
 }
+
+object DriversRepository {
+  val codec: CodecProvider = Macros.createCodecProvider[Drivers]()
+}
+
+
+
