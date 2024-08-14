@@ -21,27 +21,15 @@ class EventsRepository @Inject()(dbConnection: MongoDbConnection)(implicit ec: E
     }
   }
 
-  def insert(events: Seq[Event]): Unit = {
+  def insertEvents(events: Seq[Event]): Future[Unit] = {
     val bulkWrites = updateAndUpsert(events, "session_key")
-
-    collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
-      MyLogger.info(s"[EventRepository][insert]: Bulk write result: ${bulkWriteResult.getMatchedCount} " +
-        s"matched, ${bulkWriteResult.getUpserts.size} upserted.")
-    }.recover {
-      case ex: Throwable => MyLogger.info(s"Error during bulk write operation: ${ex.getMessage}")
-    }
+    MyLogger.info(s"[EventsRepository][insert]:")
+    super.insert(bulkWrites)
   }
 
   def findAll(params: Map[String, String]): Future[Seq[Event]] = {
-    val query: Document = Document(params.map {
-      case (key, value) => key -> value
-    }.toSeq)
-    val order: Document = Document("date_start" -> -1)
-
-    collection
-      .find(query)
-      .sort(order)
-      .toFuture()
+    val filter = Document("date_start" -> -1)
+    super.findAll(params, filter)
   }
 }
 

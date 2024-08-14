@@ -3,10 +3,10 @@ package repositories
 import config.{MongoDbConnection, MyAppConfig}
 import models.Drivers
 import org.bson.codecs.configuration.CodecProvider
+import org.mongodb.scala.Document
 import org.mongodb.scala.bson.codecs.Macros
 import org.mongodb.scala.model._
 import services.MyLogger
-
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,17 +23,15 @@ class DriversRepository @Inject()(
     }
   }
 
-  def insert(drivers: Seq[Drivers]): Future[Unit] = {
+  def insertDrivers(drivers: Seq[Drivers]): Future[Unit] = {
     val bulkWrites = updateAndUpsert(drivers)
+    MyLogger.info(s"[DriversRepository][insert]:")
+    super.insert(bulkWrites)
+  }
 
-    collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
-      MyLogger.info(s"[DriversRepository][insert]: Bulk write result: " +
-        s"${bulkWriteResult.getMatchedCount} matched, " +
-        s"${bulkWriteResult.getUpserts.size} upserted")
-    }.recover {
-      case ex: Throwable =>
-        MyLogger.red(s"Error during bulk write operation: ${ex.getMessage}")
-    }.map(_ => ())
+  def findAll(params: Map[String, String]): Future[Seq[Drivers]] = {
+    val filter = Document()
+    super.findAll(params, filter)
   }
 }
 
