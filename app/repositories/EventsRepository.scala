@@ -14,15 +14,15 @@ import org.bson.codecs.configuration.CodecProvider
 @Singleton
 class EventsRepository @Inject()(dbConnection: MongoDbConnection)(implicit ec: ExecutionContext) extends BaseRepository[Event](dbConnection, MyAppConfig.eventsCollection, EventsRepository.codec) {
 
-  private def updateAndUpsert(events: Seq[Event], paramKey: String): Seq[ReplaceOneModel[Event]] = {
-    events.map { event =>
-      val filter = Filters.eq(paramKey, event.session_key)
-      ReplaceOneModel(filter, event, ReplaceOptions().upsert(true))
+  private def updateAndUpsert(data: Seq[Event]): Seq[ReplaceOneModel[Event]] = {
+    data.map { obj =>
+      val filter = Filters.eq("session_key", obj.session_key)
+      ReplaceOneModel(filter, obj, ReplaceOptions().upsert(true))
     }
   }
 
   def insertEvents(events: Seq[Event]): Future[Unit] = {
-    val bulkWrites = updateAndUpsert(events, "session_key")
+    val bulkWrites = updateAndUpsert(events)
     MyLogger.info(s"[EventsRepository][insert]:")
     super.insert(bulkWrites)
   }

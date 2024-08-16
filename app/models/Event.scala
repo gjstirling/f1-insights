@@ -18,6 +18,25 @@ case class Event(
                   circuit_short_name: String
                 )
 
+case class ShortEvent(
+                  session_key: Int,
+                  session_name: String,
+                  session_type: String,
+                  location: String,
+                )
+
 object Event {
   implicit val eventFormat: OFormat[Event] = Json.format[Event]
+
+  def convertToShort(event: Event): ShortEvent =
+    new ShortEvent(
+      event.session_key,
+      event.session_name,
+      event.session_type,
+      event.location
+    )
+}
+
+object ShortEvent {
+  implicit val shortEventFormat: OFormat[ShortEvent] = Json.format[ShortEvent]
 }

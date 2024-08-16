@@ -41,3 +41,7 @@ abstract class BaseRepository[T: ClassTag] @Inject()(
   }
 
 }
+
+trait Repository {
+  def updateAndUpsert[T](data: Seq[T], paramKey: String): Seq[ReplaceOneModel[T]]
+}
