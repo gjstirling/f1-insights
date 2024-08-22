@@ -4,20 +4,43 @@ import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala._
+import org.mongodb.scala.model.ReplaceOneModel
+import org.mongodb.scala.Document
+import services.MyLogger
 
-import javax.inject.Singleton
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-
+import javax.inject.{Inject, Singleton}
+import MyAppConfig.{database, _}
 @Singleton
-class MongoDbConnection {
-  val password: String = scala.sys.env("DB_PASSWORD")
-  val database: String = scala.sys.env("DATABASE")
-  val connectionString = s"mongodb+srv://gstirling:$password@cluster0.zobrk9b.mongodb.net/";
-  private val client: MongoClient = MongoClient(connectionString)
+class MongoDbConnection[T: ClassTag] @Inject() (collectionString: String, codec: CodecProvider) (implicit ec: ExecutionContext) {
 
-  def getCollection[T: ClassTag](db: String, collection: String, codecProvider: CodecProvider): MongoCollection[T] = {
-    val codecRegistry = fromRegistries(fromProviders(codecProvider), DEFAULT_CODEC_REGISTRY)
-    val db: MongoDatabase = client.getDatabase(database).withCodecRegistry(codecRegistry)
-    db.getCollection[T](collection)
+  private val collection = {
+    val codecRegistry = fromRegistries(fromProviders(codec), DEFAULT_CODEC_REGISTRY)
+    val db: MongoDatabase = MongoClient(connectionString).getDatabase(database).withCodecRegistry(codecRegistry)
+    db.getCollection[T](collectionString)
   }
+
+  def findAll(params: Map[String, String], order: Document): Future[Seq[T]] = {
+    val query: Document = Document(params.map {
+      case (key, value) => key -> value
+    }.toSeq)
+
+    collection
+      .find(query)
+      .sort(order)
+      .toFuture()
+  }
+
+  def insert(bulkWrites: Seq[ReplaceOneModel[T]]): Future[Unit] = {
+    collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
+      MyLogger.info(s"Bulk write result: " +
+        s"${bulkWriteResult.getMatchedCount} matched, " +
+        s"${bulkWriteResult.getUpserts.size} upserted")
+    }.recover {
+      case ex: Throwable =>
+        MyLogger.red(s"Error during bulk write operation: ${ex.getMessage}")
+    }.map(_ => ())
+  }
+
 }

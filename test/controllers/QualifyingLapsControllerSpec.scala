@@ -2,7 +2,6 @@ package controllers
 
 import base.TestData._
 import base.ControllersSpecWithGuiceApp
-import controllers.QualifyingLapsController
 import models.QualifyingLaps
 import org.mockito.ArgumentMatchers.{any, anyString}
 import org.mockito.Mockito.when
@@ -57,25 +56,25 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
     }
 
     "return a 400 response (BadRequest) when driver_last_name is missing" in {
-      val query = "/quali?event_name=Imola"
+      val invalidQuery = "/quali?event_name=Imola"
 
-      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, query))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, invalidQuery))
 
       status(result) mustBe BAD_REQUEST
       contentAsString(result) must include("Error with param keys")
     }
 
     "return a 400 response (BadRequest) when event_name is missing" in {
-      val query = "/quali?driver_last_name=Sainz"
+      val invalidQuery = "/quali?driver_last_name=Sainz"
 
-      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, query))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, invalidQuery))
 
       status(result) mustBe BAD_REQUEST
       contentAsString(result) must include("Error with param keys")
     }
 
     "return a 400 response (BadRequest) when driver_last_name is invalid" in {
-      val query = "/quali?driver_last_name=InvalidDriver&event_name=Imola"
+      val invalidQuery = "/quali?driver_last_name=InvalidDriver&event_name=Imola"
 
       when(mockF1OpenApiController.lookup[List[QualifyingLaps]](
         anyString(),
@@ -83,14 +82,14 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
       )(any[Reads[List[QualifyingLaps]]]))
         .thenReturn(Future.successful(Right(List.empty)))
 
-      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, query))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, invalidQuery))
 
       status(result) mustBe BAD_REQUEST
       contentAsString(result) must include("Error with param values")
     }
 
     "return a 400 response (BadRequest) when event_name is invalid" in {
-      val query = "/quali?driver_last_name=Sainz&event_name=InvalidEvent"
+      val invalidQuery = "/quali?driver_last_name=Sainz&event_name=InvalidEvent"
 
       when(mockF1OpenApiController.lookup[List[QualifyingLaps]](
         anyString(),
@@ -98,7 +97,7 @@ class QualifyingLapsControllerSpec extends ControllersSpecWithGuiceApp with Mock
       )(any[Reads[List[QualifyingLaps]]]))
         .thenReturn(Future.successful(Right(List.empty)))
 
-      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, query))
+      val result = controller.findByDriverAndEvent().apply(FakeRequest(GET, invalidQuery))
 
       status(result) mustBe BAD_REQUEST
       contentAsString(result) must include("Error with param values")
