@@ -11,15 +11,15 @@ import scala.concurrent.{ExecutionContext, Future}
 @Singleton
 class DriversRepository @Inject()(dbConnection: MongoDbConnection[Drivers])(implicit ec: ExecutionContext) {
 
-  private def updateAndUpsert(drivers: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
-    drivers.map { driver =>
-      val filter = Filters.eq("full_name", driver.full_name)
-      ReplaceOneModel(filter, driver, ReplaceOptions().upsert(true))
+  private def updateAndUpsert(data: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
+    data.map { obj =>
+      val filter = Filters.eq("full_name", obj.full_name)
+      ReplaceOneModel(filter, obj, ReplaceOptions().upsert(true))
     }
   }
 
-  def insertDrivers(drivers: Seq[Drivers]): Future[Unit] = {
-    val bulkWrites = updateAndUpsert(drivers)
+  def insertDrivers(data: Seq[Drivers]): Future[Unit] = {
+    val bulkWrites = updateAndUpsert(data)
     MyLogger.info(s"[DriversRepository][insert]:")
     dbConnection.insert(bulkWrites)
   }
