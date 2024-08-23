@@ -27,10 +27,10 @@ class EventsControllerSpec extends ControllersSpecWithGuiceApp with MockitoSugar
       val result = controller.index().apply(FakeRequest(GET, ""))
 
       status(result) mustBe 200
-      contentAsString(result) must include(s"[{\"session_key\":1,\"session_name\":\"Practice 1\",\"session_type\":\"Practice\",\"location\":\"Silverstone\"}]")
+      contentAsString(result) must include(s"[{\"session_key\":1,\"session_name\":\"Practice 1\",\"location\":\"Silverstone\"}]")
     }
 
-    "return a server error when repository call fails with an exception" in {
+    "return a server error when repository call fails" in {
       when(mockEventsRepository.findAll(any[Map[String, String]])).thenReturn(Future.failed(new Exception))
       val result = controller.index().apply(FakeRequest(GET, ""))
 

@@ -1,6 +1,5 @@
 package repositories
 
-import config.MongoDbConnection
 import models.Drivers
 import org.mongodb.scala.Document
 import org.mongodb.scala.model._

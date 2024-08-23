@@ -21,7 +21,6 @@ case class Event(
 case class ShortEvent(
                   session_key: Int,
                   session_name: String,
-                  session_type: String,
                   location: String,
                 )
 
@@ -29,10 +28,9 @@ object Event {
   implicit val eventFormat: OFormat[Event] = Json.format[Event]
 
   def convertToShort(event: Event): ShortEvent =
-    new ShortEvent(
+    ShortEvent(
       event.session_key,
       event.session_name,
-      event.session_type,
       event.location
     )
 }

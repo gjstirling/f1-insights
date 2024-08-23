@@ -1,17 +1,16 @@
-package config
+package repositories
 
+import config.MyAppConfig.{connectionString, database}
 import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
-import org.mongodb.scala._
+import org.mongodb.scala.{Document, _}
 import org.mongodb.scala.model.ReplaceOneModel
-import org.mongodb.scala.Document
 import services.MyLogger
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
-import javax.inject.{Inject, Singleton}
-import MyAppConfig.{database, _}
 @Singleton
 class MongoDbConnection[T: ClassTag] @Inject() (collectionString: String, codec: CodecProvider) (implicit ec: ExecutionContext) {
 

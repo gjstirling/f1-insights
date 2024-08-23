@@ -17,6 +17,21 @@ case class Drivers(
                    meeting_key: Int
                  )
 
+case class DriversNameAndNumber(
+                                 driver_number: Int,
+                    full_name: String
+                               )
+
 object Drivers {
+
   implicit val driverFormat: OFormat[Drivers] = Json.format[Drivers]
+
+  def getNameAndNumber(d: Drivers): DriversNameAndNumber = {
+    DriversNameAndNumber(d.driver_number, d.full_name)
+  }
 }
+
+object DriversNameAndNumber {
+  implicit val nameAndNumberWrites: OFormat[DriversNameAndNumber] = Json.format[DriversNameAndNumber]
+}
+

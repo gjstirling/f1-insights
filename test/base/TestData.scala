@@ -1,6 +1,6 @@
 package base
 
-import models.{Event, LapData, QualifyingLaps}
+import models._
 
 object TestData {
   val qualifyingLap: QualifyingLaps = QualifyingLaps(
@@ -40,6 +40,38 @@ object TestData {
     circuit_key = 202,
     circuit_short_name = "SIL"
   ))
+
+  val mockDriversList: Seq[Drivers] = Seq(
+    Drivers(
+      driver_number = 44,
+      broadcast_name = "L. Hamilton",
+      full_name = "Lewis Hamilton",
+      name_acronym = "HAM",
+      team_name = "Mercedes",
+      team_colour = "#00D2BE", // Mercedes team color
+      first_name = "Lewis",
+      last_name = "Hamilton",
+      headshot_url = Some("https://example.com/hamilton.jpg"),
+      country_code = "GB",
+      session_key = 101,
+      meeting_key = 202
+    ),
+    Drivers(
+      driver_number = 33,
+      broadcast_name = "M. Verstappen",
+      full_name = "Max Verstappen",
+      name_acronym = "VER",
+      team_name = "Red Bull Racing",
+      team_colour = "#1E41FF", // Red Bull Racing team color
+      first_name = "Max",
+      last_name = "Verstappen",
+      headshot_url = Some("https://example.com/verstappen.jpg"),
+      country_code = "NL",
+      session_key = 101,
+      meeting_key = 202
+    )
+  )
+
 
   val sampleApiResponse: List[QualifyingLaps] = List(qualifyingLap)
 }

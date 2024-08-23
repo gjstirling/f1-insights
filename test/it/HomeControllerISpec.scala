@@ -1,12 +1,12 @@
 package it
 
-import base.ControllersSpecBase
+import base.ControllersSpecWithGuiceApp
 import controllers.HomeController
 import play.api.test._
 import org.scalatest.matchers.must.Matchers.convertToAnyMustWrapper
 import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout, status, stubControllerComponents}
 
-class HomeControllerISpec extends ControllersSpecBase {
+class HomeControllerISpec extends ControllersSpecWithGuiceApp {
   import scala.concurrent.ExecutionContext.Implicits.global
 
   "HomeController" should {

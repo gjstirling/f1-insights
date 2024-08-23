@@ -1,12 +1,12 @@
 package modules
 
 import com.google.inject.{AbstractModule, Provides}
-import config.MongoDbConnection
 import connectors.{ApiClient, RealApiClient}
 import models._
 import org.mongodb.scala.bson.codecs.Macros
 import tasks.MyTask
 import play.api.{Configuration, Environment}
+import repositories.MongoDbConnection
 
 import scala.concurrent.ExecutionContext
 
@@ -26,8 +26,4 @@ object Module {
   @Provides
   def provideDriversConnection(implicit ec: ExecutionContext): MongoDbConnection[Drivers] =
     new MongoDbConnection[Drivers]("drivers", Macros.createCodecProvider[Drivers]())
-
-  @Provides
-  def provideLapsConnection(implicit ec: ExecutionContext): MongoDbConnection[Laps] =
-    new MongoDbConnection[Laps]("laps", Macros.createCodecProvider[Laps]())
 }
