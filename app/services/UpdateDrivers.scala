@@ -23,7 +23,7 @@ class UpdateDrivers @Inject()(
 
     futureDrivers.onComplete {
       case Success(Right(drivers)) =>
-        repository.insert(drivers).onComplete {
+        repository.insertDrivers(drivers).onComplete {
           case Success(_) =>
             MyLogger.blue("Successfully updated drivers.")
           case Failure(ex) =>

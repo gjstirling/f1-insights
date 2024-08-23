@@ -9,7 +9,7 @@ import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
-import services.{MyLocalRepo, Services}
+import services.Services
 
 
 @Singleton
@@ -50,39 +50,32 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
 
   }
 
-  def findByDriverAndEvent: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+  def findByDriverNumberAndSession: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Map[String, String] = Services.extractParams(request).toMap
     val route = "/laps"
 
-    val driverNameOpt = params.get("driver_last_name")
-    val eventNameOpt = params.get("event_name")
+    val driverNumber = params.get("driver_number")
+    val sessionKey = params.get("session_key")
+    (driverNumber, sessionKey) match {
+      case (Some(driverNumber), Some(sessionKey)) =>
+        f1Api.lookup[List[QualifyingLaps]](route, params).map {
+          case Right(listOfLaps) if listOfLaps.nonEmpty =>
+            val hotLaps = sortAndFilterLaps(listOfLaps)
+            implicit val ReadWriter: ReadWriter[LapData] = macroRW
+            val laps = QualifyingLapsToLapData(hotLaps)
+            val jsonArray = convertToJsonArray(laps)
+            Ok(jsonArray)
 
-    (driverNameOpt, eventNameOpt) match {
-      case (Some(driverName), Some(eventName)) =>
-        val driverNumberOpt = MyLocalRepo.lastNameToRaceNumberMap.get(driverName)
-        val sessionKeyOpt = MyLocalRepo.circuitSessionKeyMap.get(eventName)
+          case Right(_) =>
+            NotFound("No qualifying laps found for the provided driver number and/or session key. " +
+              "Please check and try again")
 
-        (driverNumberOpt, sessionKeyOpt) match {
-          case (Some(driverNumber), Some(sessionKey)) =>
-            val apiParams = Map("driver_number" -> driverNumber, "session_key" -> sessionKey)
-
-            f1Api.lookup[List[QualifyingLaps]](route, apiParams).map {
-              case Right(listOfLaps) =>
-                val hotLaps = sortAndFilterLaps(listOfLaps)
-                implicit val eventRw: ReadWriter[LapData] = macroRW
-                val laps = QualifyingLapsToLapData(hotLaps)
-                val jsonArray = convertToJsonArray(laps)
-                Ok(jsonArray)
-
-              case Left(errors) =>
-                BadRequest(s"Error with request:  $errors")
-            }
-          case _ =>
-            Future.successful(BadRequest("Error with param values"))
+          case Left(errors) =>
+            BadRequest(s"Error with request: $errors")
         }
 
       case _ =>
-        Future.successful(BadRequest("Error with param keys"))
+        Future.successful(BadRequest("Missing required parameters: 'driver_number' and/or 'session_key'"))
     }
   }
 

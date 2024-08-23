@@ -5,8 +5,9 @@ import repositories.EventsRepository
 import connectors.F1OpenApi
 import upickle.default._
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
+import scala.util.{Failure, Success}
 
 
 class UpdateEvents @Inject()(
@@ -15,13 +16,20 @@ class UpdateEvents @Inject()(
                                 )(implicit ec: ExecutionContext) {
   def index(): Unit = {
     val route = "/sessions"
+    val eventsFuture: Future[Either[String, List[Event]]] = f1Api.lookup[List[Event]](route, Seq.empty)
 
-    f1Api.lookup[List[Event]](route, Seq.empty).map {
-      case Right(event) =>
-        implicit val eventRw: ReadWriter[Event] = macroRW
-        repository.insert(event)
-      case Left(errors) =>
-        MyLogger.red("Error with job")
+    eventsFuture.onComplete {
+      case Success(Right(events)) =>
+        repository.insertEvents(events).onComplete {
+          case Success(_) =>
+            MyLogger.blue("Successfully updated events.")
+          case Failure(ex) =>
+            MyLogger.red(s"Error inserting events into repository: ${ex.getMessage}")
+        }
+      case Success(Left(errors)) =>
+        MyLogger.red(s"Error fetching events: $errors")
+      case Failure(ex) =>
+        MyLogger.red(s"Exception occurred while updating events: ${ex.getMessage}")
     }
 
   }

@@ -20,7 +20,7 @@ class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents, up
     initialDelay = 1.seconds,
     interval = 1.days
   ) { () =>
-    MyLogger.blue("[MyDriverTask][updateDrivers]: Running drivers job")
+    MyLogger.blue("[MyTask][updateDrivers]: Running drivers job")
     updateDrivers.update()
   }
 

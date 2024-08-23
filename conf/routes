@@ -5,9 +5,10 @@
 
 #Home Test route
 GET     /                          controllers.HomeController.index()
-GET     /quali                     controllers.QualifyingLapsController.findByDriverAndEvent()
+GET     /quali                     controllers.QualifyingLapsController.findByDriverNumberAndSession()
 
 GET     /events                    controllers.EventsController.index()
+GET     /drivers                   controllers.DriversController.index()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
