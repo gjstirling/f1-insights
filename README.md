@@ -84,7 +84,7 @@ To run tests use the following:  <br/> `sbt clean coverage test` <br/>
 <br/> `sbt coverageReport` <br/>
 
 
-<img width="1078" alt="TestCoverage" src="https://github.com/gjstirling/f1-insights/assets/85582990/256b47fa-1889-416c-886f-aa503331cff4">
+<img width="1078" alt="TestCoverage" src="./public/images/coverage.png">
 
 To view the report navigate to the Index.html file located inside the target directory form path: 
 <br/> `/target/scala-2.13/scoverage-report/index.html`
