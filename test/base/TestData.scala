@@ -14,7 +14,7 @@ object TestData {
     lap_number = 2,
     meeting_key = 1235,
     session_key = 9511,
-    st_speed = 292
+    st_speed = None
   )
 
   val qualiData: LapData = LapData(

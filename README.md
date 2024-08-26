@@ -8,7 +8,7 @@ Hosted on Google Cloud Platform BaseUrl: ```https://myservice-m3p2yzv7ma-uc.a.ru
 
 Clone down this repository. You will need `Scala` and `sbt` installed globally on your machine.  
 
-```sbt clean compile stage dist```
+Create Binary: ```sbt clean compile stage dist``` 
 
 ## Endpoints
 

@@ -9,7 +9,7 @@ import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
-import services.Services
+import services.{MyLogger, Services}
 
 
 @Singleton
@@ -56,8 +56,12 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
 
     val driverNumber = params.get("driver_number")
     val sessionKey = params.get("session_key")
+
     (driverNumber, sessionKey) match {
-      case (Some(driverNumber), Some(sessionKey)) =>
+      case (Some(""), _ ) => Future.successful(BadRequest(s"Error with request, missing driver number"))
+      case (_ , Some("")) => Future.successful(BadRequest(s"Error with request, missing session key"))
+
+      case (Some(_), Some(_)) =>
         f1Api.lookup[List[QualifyingLaps]](route, params).map {
           case Right(listOfLaps) if listOfLaps.nonEmpty =>
             val hotLaps = sortAndFilterLaps(listOfLaps)

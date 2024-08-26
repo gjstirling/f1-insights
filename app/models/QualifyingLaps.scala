@@ -13,7 +13,7 @@ case class QualifyingLaps (
                            lap_number: Int,
                            meeting_key: Int,
                            session_key: Int,
-                           st_speed: Int
+                           st_speed: Option[Int]
                          )
 
 object QualifyingLaps {
