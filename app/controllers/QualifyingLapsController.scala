@@ -33,23 +33,6 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
     }
   }
 
-  private def QualifyingLapsToLapData(qualiLaps: List[QualifyingLaps]): List[LapData] = {
-    qualiLaps.map { lap =>
-      val minutes = if (lap.lap_duration.get > 60.00) 1
-      val seconds = ((lap.lap_duration.get - 60) * 1000).round / 1000.toDouble
-      val totalLapTime = s"${minutes}m$seconds"
-
-      LapData(
-        lap_number = lap.lap_number,
-        lap.duration_sector_1.getOrElse(0),
-        lap.duration_sector_2.getOrElse(0),
-        lap.duration_sector_3.getOrElse(0),
-        totalLapTime
-      )
-    }
-
-  }
-
   def findByDriverNumberAndSession: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Map[String, String] = Services.extractParams(request).toMap
     val route = "/laps"
@@ -66,7 +49,7 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
           case Right(listOfLaps) if listOfLaps.nonEmpty =>
             val hotLaps = sortAndFilterLaps(listOfLaps)
             implicit val ReadWriter: ReadWriter[LapData] = macroRW
-            val laps = QualifyingLapsToLapData(hotLaps)
+            val laps = QualifyingLaps.toLapData(hotLaps)
             val jsonArray = convertToJsonArray(laps)
             Ok(jsonArray)
 
