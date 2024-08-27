@@ -17,4 +17,10 @@ object Services {
     JsArray(jsonList)
   }
 
+  def toMinutesAndSeconds(lapTime: Double ): String = {
+    val minutes = if (lapTime > 60.00) 1
+    val seconds = ((lapTime - 60) * 1000).round / 1000.toDouble
+    s"${minutes}m$seconds"
+  }
+
 }

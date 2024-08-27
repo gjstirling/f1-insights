@@ -1,6 +1,7 @@
 package models
 
 import play.api.libs.json.{Json, OFormat}
+import services.Services.toMinutesAndSeconds
 
 case class QualifyingLaps (
                            date_start: String,
@@ -20,18 +21,20 @@ object QualifyingLaps {
   implicit val eventFormat: OFormat[QualifyingLaps] = Json.format[QualifyingLaps]
 
   def toLapData(qualiLaps: List[QualifyingLaps]): List[LapData] = {
-    qualiLaps.map { lap =>
-      val minutes = if (lap.lap_duration.get > 60.00) 1
-      val seconds = ((lap.lap_duration.get - 60) * 1000).round / 1000.toDouble
-      val totalLapTime = s"${minutes}m$seconds"
+    qualiLaps.flatMap { lap =>
+      lap.lap_duration match {
+        case Some(duration) if duration > 0 =>
+          Some(LapData(
+            lap_number = lap.lap_number,
+            sector_1 = lap.duration_sector_1.getOrElse(0),
+            sector_2 = lap.duration_sector_2.getOrElse(0),
+            sector_3 = lap.duration_sector_3.getOrElse(0),
+            lap_time = toMinutesAndSeconds(duration)
+          ))
 
-      LapData(
-        lap_number = lap.lap_number,
-        lap.duration_sector_1.getOrElse(0),
-        lap.duration_sector_2.getOrElse(0),
-        lap.duration_sector_3.getOrElse(0),
-        totalLapTime
-      )
+        case None | Some(0) =>
+          throw new IllegalArgumentException("Invalid lap_duration: Must not be zero or None")
+      }
     }
   }
 }
