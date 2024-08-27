@@ -3,8 +3,9 @@ package controllers
 import config.MyAppConfig.toleranceForLaps
 import connectors.F1OpenApi
 import models.{LapData, QualifyingLaps}
+import play.api.libs.json.{JsArray, Json}
 import play.api.mvc._
-import services.Services.convertToJsonArray
+import services.Services.{convertToJsonArray, toMinutesAndSeconds}
 import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -33,6 +34,11 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
     }
   }
 
+  private def findAverageLaptime(laps: List[QualifyingLaps]): JsArray = {
+    val average = laps.flatMap(_.lap_duration).sum / laps.length
+    Json.arr(Json.obj("average_laptime" -> toMinutesAndSeconds(average)))
+  }
+
   def findByDriverNumberAndSession: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Map[String, String] = Services.extractParams(request).toMap
     val route = "/laps"
@@ -48,10 +54,15 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
         f1Api.lookup[List[QualifyingLaps]](route, params).map {
           case Right(listOfLaps) if listOfLaps.nonEmpty =>
             val hotLaps = sortAndFilterLaps(listOfLaps)
-            implicit val ReadWriter: ReadWriter[LapData] = macroRW
-            val laps = QualifyingLaps.toLapData(hotLaps)
-            val jsonArray = convertToJsonArray(laps)
-            Ok(jsonArray)
+            val averageLap: JsArray = findAverageLaptime(hotLaps)
+            if (hotLaps.isEmpty) {
+              Ok(s"No completed laps for driver_number: ${driverNumber.get} and session_key:${sessionKey.get}")
+            } else {
+              implicit val ReadWriter: ReadWriter[LapData] = macroRW
+              val laps = QualifyingLaps.toLapData(hotLaps)
+              val jsonLaps = convertToJsonArray(laps)
+              Ok(jsonLaps ++ averageLap)
+            }
 
           case Right(_) =>
             NotFound("No qualifying laps found for the provided driver number and/or session key. " +
