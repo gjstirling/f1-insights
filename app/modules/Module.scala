@@ -26,4 +26,8 @@ object Module {
   @Provides
   def provideDriversConnection(implicit ec: ExecutionContext): MongoDbConnection[Drivers] =
     new MongoDbConnection[Drivers]("drivers", Macros.createCodecProvider[Drivers]())
+
+  @Provides
+  def provideLapsConnection(implicit ec: ExecutionContext): MongoDbConnection[QualifyingLaps] =
+    new MongoDbConnection[QualifyingLaps]("laps", Macros.createCodecProvider[QualifyingLaps]())
 }

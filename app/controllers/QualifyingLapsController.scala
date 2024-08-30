@@ -5,7 +5,7 @@ import connectors.F1OpenApi
 import models.{LapData, QualifyingLaps}
 import play.api.libs.json.{JsArray, Json}
 import play.api.mvc._
-import services.Services.{convertToJsonArray, toMinutesAndSeconds}
+import services.Services.{convertToJsonArray, toMinutesAndSeconds, sortAndFilterLaps}
 import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -17,22 +17,7 @@ import services.{MyLogger, Services}
 class QualifyingLapsController @Inject()(val controllerComponents: ControllerComponents,
                                          val f1Api: F1OpenApi)(implicit executionContext: ExecutionContext) extends BaseController {
 
-  private def sortAndFilterLaps(laps: List[QualifyingLaps]): List[QualifyingLaps] = {
-    val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
-    val fastestLapOpt = sortedLaps.headOption.flatMap(_.lap_duration)
-
-    fastestLapOpt match {
-      case Some(fastestLap) =>
-        val filteredLaps = sortedLaps.filter { lap =>
-          lap.lap_duration.exists(_ <= fastestLap * toleranceForLaps
-          )
-        }
-        filteredLaps.sortBy(_.lap_number)
-
-      case None =>
-        List.empty[QualifyingLaps]
-    }
-  }
+  implicit val ReadWriter: ReadWriter[LapData] = macroRW
 
   private def findAverageLaptime(laps: List[QualifyingLaps]): JsArray = {
     val average = laps.flatMap(_.lap_duration).sum / laps.length
@@ -58,7 +43,6 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
             if (hotLaps.isEmpty) {
               Ok(s"No completed laps for driver_number: ${driverNumber.get} and session_key:${sessionKey.get}")
             } else {
-              implicit val ReadWriter: ReadWriter[LapData] = macroRW
               val laps = QualifyingLaps.toLapData(hotLaps)
               val jsonLaps = convertToJsonArray(laps)
               Ok(jsonLaps ++ averageLap)

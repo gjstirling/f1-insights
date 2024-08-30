@@ -10,6 +10,7 @@ import javax.inject._
 import scala.util.{Failure, Success}
 
 
+@Singleton
 class UpdateEvents @Inject()(
                                   val repository: EventsRepository,
                                   val f1Api: F1OpenApi
@@ -32,5 +33,16 @@ class UpdateEvents @Inject()(
         MyLogger.red(s"Exception occurred while updating events: ${ex.getMessage}")
     }
 
+  }
+
+  def getSessionKeys: Future[Seq[Int]] = {
+    val result = repository.findAll(Map("session_name" -> "Qualifying")).map { keys =>
+      keys.map(_.session_key)
+    }.recover {
+      case exception: Exception =>
+        println(s"Failed to fetch session keys: ${exception.getMessage}")
+        Seq.empty[Int]
+    }
+    result
   }
 }

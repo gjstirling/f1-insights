@@ -20,8 +20,8 @@ case class QualifyingLaps (
 object QualifyingLaps {
   implicit val eventFormat: OFormat[QualifyingLaps] = Json.format[QualifyingLaps]
 
-  def toLapData(qualiLaps: List[QualifyingLaps]): List[LapData] = {
-    qualiLaps.flatMap { lap =>
+  def toLapData(laps: List[QualifyingLaps]): List[LapData] = {
+    laps.flatMap { lap =>
       lap.lap_duration match {
         case Some(duration) if duration > 0 =>
           Some(LapData(
