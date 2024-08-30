@@ -19,6 +19,7 @@ class UpdateLaps @Inject()(
     val route = "/laps"
     sessionKeys.foreach(key => {
       val params = Map("session_key" -> s"$key")
+      Thread.sleep(100)
       val apiCall = f1Api.lookup[List[QualifyingLaps]](route, params)
 
       apiCall.onComplete {
