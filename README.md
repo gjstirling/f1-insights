@@ -2,7 +2,7 @@
 
 An API built utilising the Scala Play framework, Scala's Mongo DB driver, the Akka fork (Pekko), containerised using Docker and deployed on Google Cloud Platform. 
 
-Hosted on Google Cloud Platform BaseUrl: ``https://f1insights-283237385368.us-central1.run.app```
+Hosted on Google Cloud Platform BaseUrl: ```https://f1insights-283237385368.us-central1.run.app```
 
 ## Installation and Setup Instructions
 
