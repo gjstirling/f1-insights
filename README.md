@@ -2,7 +2,7 @@
 
 An API built utilising the Scala Play framework, Scala's Mongo DB driver, the Akka fork (Pekko), containerised using Docker and deployed on Google Cloud Platform. 
 
-Hosted on Google Cloud Platform BaseUrl: ```https://myservice-m3p2yzv7ma-uc.a.run.app```
+Hosted on Google Cloud Platform BaseUrl: ``https://f1insights-283237385368.us-central1.run.app```
 
 ## Installation and Setup Instructions
 
@@ -25,7 +25,7 @@ the /events endpoint <br>
 
 ## Below is an example request: 
 ### Request 
-`https://myservice-m3p2yzv7ma-uc.a.run.app/quali?driver_number=55&session_key=9570`
+`https://f1insights-283237385368.us-central1.run.app/quali?driver_number=55&session_key=9570`
 
 ### Response
 
