@@ -1,5 +1,6 @@
 package services
 
+import config.F1ApiRoutes
 import connectors.F1OpenApi
 import models.Drivers
 import repositories.DriversRepository
@@ -17,9 +18,8 @@ class UpdateDrivers @Inject()(
   implicit val driverRw: ReadWriter[Drivers] = macroRW
 
   def update(): Unit = {
-    val route = "/drivers"
     val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", "latest"))
-    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](route, paramsWithFilters)
+    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1ApiRoutes.drivers, paramsWithFilters)
 
     futureDrivers.onComplete {
       case Success(Right(drivers)) =>
@@ -35,4 +35,35 @@ class UpdateDrivers @Inject()(
         MyLogger.red(s"Exception occurred while updating drivers: ${ex.getMessage}")
     }
   }
+
+  def init(eventKeyList: Seq[Int]): Unit = {
+
+    val futureUpdates: Seq[Future[Unit]] = eventKeyList.map { eventKeyValue =>
+      val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", eventKeyValue.toString))
+      val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1ApiRoutes.drivers, paramsWithFilters)
+
+      futureDrivers.flatMap {
+        case Right(drivers) =>
+          repository.insertDrivers(drivers).map { _ =>
+            MyLogger.blue(s"Successfully updated drivers for session_key $eventKeyValue.")
+          }.recover { case ex =>
+            MyLogger.red(s"Error inserting drivers for session_key $eventKeyValue: ${ex.getMessage}")
+          }
+        case Left(errors) =>
+          Future {
+            MyLogger.red(s"Error fetching drivers for session_key $eventKeyValue: $errors")
+          }
+      }.recover { case ex =>
+        MyLogger.red(s"Exception occurred while fetching drivers for session_key $eventKeyValue: ${ex.getMessage}")
+      }
+    }
+
+    Future.sequence(futureUpdates).onComplete {
+      case Success(_) =>
+        MyLogger.blue("All driver updates completed.")
+      case Failure(ex) =>
+        MyLogger.red(s"Some driver updates failed: ${ex.getMessage}")
+    }
+  }
+
 }

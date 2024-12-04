@@ -3,7 +3,7 @@ package base
 import models._
 
 object TestData {
-  val qualifyingLap: QualifyingLaps = QualifyingLaps(
+  val qualifyingLap: Laps = Laps(
     date_start = "2024-05-18T14:04:14.304000+00:00",
     driver_number = 55,
     duration_sector_1 = Some(24.699),
@@ -73,5 +73,5 @@ object TestData {
   )
 
 
-  val sampleApiResponse: List[QualifyingLaps] = List(qualifyingLap)
+  val sampleApiResponse: List[Laps] = List(qualifyingLap)
 }

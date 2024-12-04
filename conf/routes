@@ -5,7 +5,7 @@
 
 #Home Test route
 GET     /                          controllers.HomeController.index()
-GET     /quali                     controllers.QualifyingLapsController.findByDriverNumberAndSession()
+GET     /quali                     controllers.LapsController.findByDriverNumberAndSession()
 
 GET     /events                    controllers.EventsController.index()
 GET     /drivers                   controllers.DriversController.index()

@@ -22,7 +22,8 @@ case class ShortEvent(
                   session_key: Int,
                   session_name: String,
                   location: String,
-                )
+                  country_name: String,
+                     )
 
 object Event {
   implicit val eventFormat: OFormat[Event] = Json.format[Event]
@@ -31,7 +32,8 @@ object Event {
     ShortEvent(
       event.session_key,
       event.session_name,
-      event.location
+      event.location,
+      event.country_name
     )
 }
 

@@ -31,6 +31,17 @@ class MongoDbConnection[T: ClassTag] @Inject() (collectionString: String, codec:
       .toFuture()
   }
 
+  def findAllLaps(params: Map[String, Int], order: Document): Future[Seq[T]] = {
+    val query: Document = Document(params.map {
+      case (key, value) => key -> value
+    }.toSeq)
+
+    collection
+      .find(query)
+      .sort(order)
+      .toFuture()
+  }
+
   def insert(bulkWrites: Seq[ReplaceOneModel[T]]): Future[Unit] = {
     collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
       MyLogger.info(s"Bulk write result: " +

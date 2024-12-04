@@ -3,7 +3,7 @@ package models
 import play.api.libs.json.{Json, OFormat}
 import services.Services.toMinutesAndSeconds
 
-case class QualifyingLaps (
+case class Laps (
                            date_start: String,
                            driver_number: Int,
                            duration_sector_1: Option[Double],
@@ -17,10 +17,10 @@ case class QualifyingLaps (
                            st_speed: Option[Int]
                          )
 
-object QualifyingLaps {
-  implicit val eventFormat: OFormat[QualifyingLaps] = Json.format[QualifyingLaps]
+object Laps {
+  implicit val eventFormat: OFormat[Laps] = Json.format[Laps]
 
-  def toLapData(qualiLaps: List[QualifyingLaps]): List[LapData] = {
+  def toLapData(qualiLaps: List[Laps]): List[LapData] = {
     qualiLaps.flatMap { lap =>
       lap.lap_duration match {
         case Some(duration) if duration > 0 =>

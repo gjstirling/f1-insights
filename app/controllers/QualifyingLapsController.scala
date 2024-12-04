@@ -2,9 +2,10 @@ package controllers
 
 import config.MyAppConfig.toleranceForLaps
 import connectors.F1OpenApi
-import models.{LapData, QualifyingLaps}
+import models.{LapData, Laps}
 import play.api.libs.json.{JsArray, Json}
 import play.api.mvc._
+import repositories.LapsRepository
 import services.Services.{convertToJsonArray, toMinutesAndSeconds}
 import upickle.default._
 
@@ -14,10 +15,9 @@ import services.{MyLogger, Services}
 
 
 @Singleton
-class QualifyingLapsController @Inject()(val controllerComponents: ControllerComponents,
-                                         val f1Api: F1OpenApi)(implicit executionContext: ExecutionContext) extends BaseController {
+class LapsController @Inject()(val controllerComponents: ControllerComponents, repository: LapsRepository)(implicit executionContext: ExecutionContext) extends BaseController {
 
-  private def sortAndFilterLaps(laps: List[QualifyingLaps]): List[QualifyingLaps] = {
+  private def sortAndFilterLaps(laps: List[Laps]): List[Laps] = {
     val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
     val fastestLapOpt = sortedLaps.headOption.flatMap(_.lap_duration)
 
@@ -30,11 +30,11 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
         filteredLaps.sortBy(_.lap_number)
 
       case None =>
-        List.empty[QualifyingLaps]
+        List.empty[Laps]
     }
   }
 
-  private def findAverageLaptime(laps: List[QualifyingLaps]): JsArray = {
+  private def findAverageLaptime(laps: List[Laps]): JsArray = {
     val average = laps.flatMap(_.lap_duration).sum / laps.length
     Json.arr(Json.obj("average_laptime" -> toMinutesAndSeconds(average)))
   }
@@ -51,15 +51,15 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
       case (_ , Some("")) => Future.successful(BadRequest(s"Error with request, missing session key"))
 
       case (Some(_), Some(_)) =>
-        f1Api.lookup[List[QualifyingLaps]](route, params).map {
+        repository.findByDriverAndSession(params).map {
           case Right(listOfLaps) if listOfLaps.nonEmpty =>
-            val hotLaps = sortAndFilterLaps(listOfLaps)
+            val hotLaps = sortAndFilterLaps(listOfLaps.toList)
             val averageLap: JsArray = findAverageLaptime(hotLaps)
             if (hotLaps.isEmpty) {
               Ok(s"No completed laps for driver_number: ${driverNumber.get} and session_key:${sessionKey.get}")
             } else {
               implicit val ReadWriter: ReadWriter[LapData] = macroRW
-              val laps = QualifyingLaps.toLapData(hotLaps)
+              val laps = Laps.toLapData(hotLaps)
               val jsonLaps = convertToJsonArray(laps)
               Ok(jsonLaps ++ averageLap)
             }
@@ -76,5 +76,4 @@ class QualifyingLapsController @Inject()(val controllerComponents: ControllerCom
         Future.successful(BadRequest("Missing required parameters: 'driver_number' and/or 'session_key'"))
     }
   }
-
 }
