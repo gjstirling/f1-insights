@@ -31,7 +31,7 @@ jobs:
 
       - name: Deploy to Cloud Run
         run: |
-          gcloud run deploy myservice \
+          gcloud run deploy f1insights \
             --image us-docker.pkg.dev/${{ secrets.GOOGLE_PROJECT }}/gcr.io/myapp:latest \
             --platform managed \
             --region us-central1 \
