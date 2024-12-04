@@ -4,9 +4,9 @@ import repositories.DriversRepository
 import base.UnitSpec
 
 
-class UpdateDriversSpec extends UnitSpec {
+class DriverServiceSpec extends UnitSpec {
   val mockRepository: DriversRepository = mock[DriversRepository]
-  val updateDrivers = new UpdateDrivers(mockRepository, mockF1OpenApiController)(ec)
+  val DriverService = new DriverService(mockRepository, mockF1OpenApiController)(ec)
 
   "update" should {
     "log success when drivers are fetched and inserted successfully" in {

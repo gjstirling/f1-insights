@@ -4,9 +4,9 @@ import repositories.EventsRepository
 import base.UnitSpec
 
 
-class UpdateEventsSpec extends UnitSpec {
+class EventsServiceSpec extends UnitSpec {
   val mockRepository: EventsRepository = mock[EventsRepository]
-  val updateDrivers = new UpdateEvents(mockRepository, mockF1OpenApiController)(ec)
+  val DriverService = new EventsService(mockRepository, mockF1OpenApiController)(ec)
 
   "update" should {
     "log success when events are fetched and inserted successfully" in {

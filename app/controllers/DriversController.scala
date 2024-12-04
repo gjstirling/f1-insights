@@ -13,16 +13,12 @@ class DriversController @Inject()(
                                  val controllerComponents: ControllerComponents,
                                  val repository: DriversRepository
                                )(implicit val executionContext: ExecutionContext) extends BaseController {
+
   def index: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    val params: Map[String, String] = Map.empty
-    val driverSearchResult: Future[Seq[Drivers]] = repository.findAll(params)
+    val driverSearchResult: Future[Seq[Drivers]] = repository.findAll(Map.empty)
 
     driverSearchResult.map { drivers =>
-      val nameAndNumber = drivers.map { driver =>
-        Drivers.getNameAndNumber(driver)
-      }
-
-      val json: JsValue = Json.toJson(nameAndNumber)
+      val json: JsValue = Json.toJson(drivers)
       Ok(json)
     }.recover {
       case ex: Exception =>

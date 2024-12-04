@@ -1,5 +1,7 @@
 package services
 
+import config.MyAppConfig.toleranceForLaps
+import models.Laps
 import play.api.mvc.{AnyContent, Request}
 import play.api.libs.json._
 import upickle.default._
@@ -21,6 +23,23 @@ object Services {
     val minutes = if (lapTime > 60.00) 1
     val seconds = ((lapTime - 60) * 1000).round / 1000.toDouble
     s"${minutes}m$seconds"
+  }
+
+  def sortAndFilterLaps(laps: List[Laps]): List[Laps] = {
+    val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
+    val fastestLapOpt = sortedLaps.headOption.flatMap(_.lap_duration)
+
+    fastestLapOpt match {
+      case Some(fastestLap) =>
+        val filteredLaps = sortedLaps.filter { lap =>
+          lap.lap_duration.exists(_ <= fastestLap * toleranceForLaps
+          )
+        }
+        filteredLaps.sortBy(_.lap_number)
+
+      case None =>
+        List.empty[Laps]
+    }
   }
 
 }

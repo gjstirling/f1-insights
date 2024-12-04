@@ -11,8 +11,18 @@ import scala.concurrent.{ExecutionContext, Future}
 class DriversRepository @Inject()(dbConnection: MongoDbConnection[Drivers])(implicit ec: ExecutionContext) {
 
   private def updateAndUpsert(data: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
-    data.map { obj =>
-      val filter = Filters.eq("full_name", obj.full_name)
+    val filteredData = data.filter(_.team_name.isDefined)
+
+    filteredData.map { obj =>
+      val teamNameFilter = obj.team_name match {
+        case Some(teamName) => Filters.eq("team_name", teamName)
+      }
+
+      val filter = Filters.and(
+        Filters.eq("full_name", obj.full_name),
+        teamNameFilter
+      )
+
       ReplaceOneModel(filter, obj, ReplaceOptions().upsert(true))
     }
   }

@@ -3,20 +3,19 @@ package services
 import models.Event
 import repositories.EventsRepository
 import connectors.F1OpenApi
-import upickle.default._
-
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
 import scala.util.{Failure, Success}
+import config.F1Api
 
-
-class UpdateEvents @Inject()(
-                                  val repository: EventsRepository,
-                                  val f1Api: F1OpenApi
-                                )(implicit ec: ExecutionContext) {
+class EventsService @Inject()(
+                              val repository: EventsRepository,
+                              val f1Api: F1OpenApi
+                            )(implicit ec: ExecutionContext) {
   def index(): Unit = {
-    val route = "/sessions"
-    val eventsFuture: Future[Either[String, List[Event]]] = f1Api.lookup[List[Event]](route, Seq.empty)
+    // Currently limiting to 2024 season and Qualifying only
+    val paramsWithFilters: Iterable[(String, String)] = Seq(("year", "2024"), ("session_type", "Qualifying"))
+    val eventsFuture: Future[Either[String, List[Event]]] = f1Api.lookup[List[Event]](F1Api.events, paramsWithFilters)
 
     eventsFuture.onComplete {
       case Success(Right(events)) =>
@@ -31,6 +30,9 @@ class UpdateEvents @Inject()(
       case Failure(ex) =>
         MyLogger.red(s"Exception occurred while updating events: ${ex.getMessage}")
     }
+  }
 
+  def getEventList() = {
+    repository.getSessionKeys(Map.empty)
   }
 }
