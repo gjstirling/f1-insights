@@ -6,7 +6,7 @@ import connectors.F1OpenApi
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
 import scala.util.{Failure, Success}
-import config.F1ApiRoutes
+import config.F1Api
 
 class UpdateEvents @Inject()(
                               val repository: EventsRepository,
@@ -15,7 +15,7 @@ class UpdateEvents @Inject()(
   def index(): Unit = {
     // Currently limiting to 2024 season and Qualifying only
     val paramsWithFilters: Iterable[(String, String)] = Seq(("year", "2024"), ("session_type", "Qualifying"))
-    val eventsFuture: Future[Either[String, List[Event]]] = f1Api.lookup[List[Event]](F1ApiRoutes.events, paramsWithFilters)
+    val eventsFuture: Future[Either[String, List[Event]]] = f1Api.lookup[List[Event]](F1Api.events, paramsWithFilters)
 
     eventsFuture.onComplete {
       case Success(Right(events)) =>

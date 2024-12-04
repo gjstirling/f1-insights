@@ -39,11 +39,9 @@ class LapsRepository @Inject()(dbConnection: MongoDbConnection[Laps])(implicit e
 
     (driverNumberOpt, sessionKeyOpt) match {
       case (Some(driverNumber), Some(sessionKey)) =>
-        // Construct the filter with integer values
         val filter = Map("driver_number" -> driverNumber, "session_key" -> sessionKey)
 
-        // Call findAll with converted params
-        dbConnection.findAllLaps(filter, order).map { results =>
+        dbConnection.findAll(filter, order).map { results =>
           if (results.nonEmpty) {
             Right(results)
           } else {

@@ -27,11 +27,27 @@ class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents, up
   }
 
   actorSystem.scheduler.scheduleAtFixedRate(
-    initialDelay = 1.days,
+    initialDelay = 1.hour,
     interval = 1.days
   ) { () =>
     MyLogger.blue("[MyTask][updateEvents]: Running events job (checking for new events)")
     updateEvents.index()
+  }
+
+  actorSystem.scheduler.scheduleAtFixedRate(
+    initialDelay = 2.hour,
+    interval = 1.days
+  ) { () =>
+    MyLogger.blue("[MyTask][update]: Running driver and laps job (checking for new drivers and lap times)")
+    val eventsFuture = updateEvents.getEventList()
+
+    eventsFuture.map { events =>
+      updateDrivers.init(events)
+      updateLaps.initilize(events)
+    }.recover {
+      case ex: Throwable =>
+        MyLogger.red(s"Failed to initialize lap times collection: $ex")
+    }
   }
 
 }

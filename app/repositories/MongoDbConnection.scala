@@ -4,6 +4,7 @@ import config.MyAppConfig.{connectionString, database}
 import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
 import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
+import org.mongodb.scala.bson.{BsonInt32, BsonString}
 import org.mongodb.scala.{Document, _}
 import org.mongodb.scala.model.ReplaceOneModel
 import services.MyLogger
@@ -20,21 +21,16 @@ class MongoDbConnection[T: ClassTag] @Inject() (collectionString: String, codec:
     db.getCollection[T](collectionString)
   }
 
-  def findAll(params: Map[String, String], order: Document): Future[Seq[T]] = {
-    val query: Document = Document(params.map {
-      case (key, value) => key -> value
-    }.toSeq)
-
-    collection
-      .find(query)
-      .sort(order)
-      .toFuture()
+  private def buildQuery(params: Map[String, Any]): Document = {
+    Document(params.map {
+      case (key, value: String)  => key -> BsonString(value)
+      case (key, value: Int)     => key -> BsonInt32(value)
+      case (key, _)              => throw new IllegalArgumentException(s"Unsupported type for key $key")
+    })
   }
 
-  def findAllLaps(params: Map[String, Int], order: Document): Future[Seq[T]] = {
-    val query: Document = Document(params.map {
-      case (key, value) => key -> value
-    }.toSeq)
+  def findAll(params: Map[String, Any], order: Document): Future[Seq[T]] = {
+    val query: Document = buildQuery(params)
 
     collection
       .find(query)

@@ -1,6 +1,6 @@
 package services
 
-import config.F1ApiRoutes
+import config.F1Api
 import connectors.F1OpenApi
 import models.Drivers
 import repositories.DriversRepository
@@ -19,7 +19,7 @@ class UpdateDrivers @Inject()(
 
   def update(): Unit = {
     val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", "latest"))
-    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1ApiRoutes.drivers, paramsWithFilters)
+    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1Api.drivers, paramsWithFilters)
 
     futureDrivers.onComplete {
       case Success(Right(drivers)) =>
@@ -40,7 +40,7 @@ class UpdateDrivers @Inject()(
 
     val futureUpdates: Seq[Future[Unit]] = eventKeyList.map { eventKeyValue =>
       val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", eventKeyValue.toString))
-      val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1ApiRoutes.drivers, paramsWithFilters)
+      val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1Api.drivers, paramsWithFilters)
 
       futureDrivers.flatMap {
         case Right(drivers) =>
