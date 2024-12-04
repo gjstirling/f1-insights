@@ -9,7 +9,7 @@ import scala.util.{Failure, Success}
 import config.F1Api
 
 @Singleton
-class UpdateLaps @Inject()(
+class LapsService @Inject()(
                             val repository: LapsRepository,
                             val f1Api: F1OpenApi
                           )(implicit ec: ExecutionContext) {

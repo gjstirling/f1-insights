@@ -8,7 +8,7 @@ import javax.inject._
 import scala.util.{Failure, Success}
 import config.F1Api
 
-class UpdateEvents @Inject()(
+class EventsService @Inject()(
                               val repository: EventsRepository,
                               val f1Api: F1OpenApi
                             )(implicit ec: ExecutionContext) {

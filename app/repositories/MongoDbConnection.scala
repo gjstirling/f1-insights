@@ -13,7 +13,26 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 @Singleton
-class MongoDbConnection[T: ClassTag] @Inject() (collectionString: String, codec: CodecProvider) (implicit ec: ExecutionContext) {
+class MongoDbConnection[T: ClassTag] @Inject()(collectionString: String, codec: CodecProvider)(implicit ec: ExecutionContext) {
+  def findAll(params: Map[String, Any], order: Document): Future[Seq[T]] = {
+    val query: Document = buildQuery(params)
+
+    collection
+      .find(query)
+      .sort(order)
+      .toFuture()
+  }
+
+  def insert(bulkWrites: Seq[ReplaceOneModel[T]]): Future[Unit] = {
+    collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
+      MyLogger.info(s"Bulk write result: " +
+        s"${bulkWriteResult.getMatchedCount} matched, " +
+        s"${bulkWriteResult.getUpserts.size} updated")
+    }.recover {
+      case ex: Throwable =>
+        MyLogger.red(s"Error during bulk write operation: ${ex.getMessage}")
+    }.map(_ => ())
+  }
 
   private val collection = {
     val codecRegistry = fromRegistries(fromProviders(codec), DEFAULT_CODEC_REGISTRY)
@@ -29,24 +48,5 @@ class MongoDbConnection[T: ClassTag] @Inject() (collectionString: String, codec:
     })
   }
 
-  def findAll(params: Map[String, Any], order: Document): Future[Seq[T]] = {
-    val query: Document = buildQuery(params)
-
-    collection
-      .find(query)
-      .sort(order)
-      .toFuture()
-  }
-
-  def insert(bulkWrites: Seq[ReplaceOneModel[T]]): Future[Unit] = {
-    collection.bulkWrite(bulkWrites).toFuture().map { bulkWriteResult =>
-      MyLogger.info(s"Bulk write result: " +
-        s"${bulkWriteResult.getMatchedCount} matched, " +
-        s"${bulkWriteResult.getUpserts.size} upserted")
-    }.recover {
-      case ex: Throwable =>
-        MyLogger.red(s"Error during bulk write operation: ${ex.getMessage}")
-    }.map(_ => ())
-  }
 
 }

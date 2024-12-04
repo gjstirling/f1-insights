@@ -10,7 +10,7 @@ import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
-class UpdateDrivers @Inject()(
+class DriverService @Inject()(
                                val repository: DriversRepository,
                                val f1Api: F1OpenApi
                              )(implicit ec: ExecutionContext) {

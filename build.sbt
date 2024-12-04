@@ -14,7 +14,7 @@ libraryDependencies ++= Seq(
   filters
 )
 
-coverageExcludedPackages := "<empty>;Reverse.*;router;main.scala.config*;.*MyLogger.*;.*MyLocalRepo.*;.*RealApiClient.*\\.*"
+coverageExcludedPackages := "<empty>;Reverse.*;router;main.scala.config*;.*MyLogger.*;.*MyLocalRepo.*;.*F1OpenApiClient.*\\.*"
 
 import com.typesafe.sbt.packager.docker._
 dockerChmodType := DockerChmodType.UserGroupWriteExecute

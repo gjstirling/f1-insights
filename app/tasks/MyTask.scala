@@ -4,21 +4,21 @@ import org.apache.pekko.actor.ActorSystem
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
-import services.{MyLogger, UpdateDrivers, UpdateEvents, UpdateLaps}
+import services.{MyLogger, DriverService, EventsService, LapsService}
 
-class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents, updateDrivers: UpdateDrivers, updateLaps: UpdateLaps)(implicit ec: ExecutionContext) {
+class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, DriverService: DriverService, updateLaps: LapsService)(implicit ec: ExecutionContext) {
 
   actorSystem.scheduler.scheduleOnce(1.second) {
-    MyLogger.blue("[MyTask][updateDrivers]: Initialising events collection")
-    updateEvents.index()
+    MyLogger.blue("[MyTask][DriverService]: Initialising events collection")
+    EventsService.index()
   }
 
   actorSystem.scheduler.scheduleOnce(5.seconds) {
-    val eventsFuture = updateEvents.getEventList()
+    val eventsFuture = EventsService.getEventList()
 
     eventsFuture.map { events =>
       MyLogger.blue("[MyTask][updateLaps]: Initialising lap times collection")
-      updateDrivers.init(events)
+      DriverService.init(events)
       updateLaps.initilize(events)
     }.recover {
       case ex: Throwable =>
@@ -30,8 +30,8 @@ class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents, up
     initialDelay = 1.hour,
     interval = 1.days
   ) { () =>
-    MyLogger.blue("[MyTask][updateEvents]: Running events job (checking for new events)")
-    updateEvents.index()
+    MyLogger.blue("[MyTask][EventsService]: Running events job (checking for new events)")
+    EventsService.index()
   }
 
   actorSystem.scheduler.scheduleAtFixedRate(
@@ -39,10 +39,10 @@ class MyTask @Inject() (actorSystem: ActorSystem, updateEvents: UpdateEvents, up
     interval = 1.days
   ) { () =>
     MyLogger.blue("[MyTask][update]: Running driver and laps job (checking for new drivers and lap times)")
-    val eventsFuture = updateEvents.getEventList()
+    val eventsFuture = EventsService.getEventList()
 
     eventsFuture.map { events =>
-      updateDrivers.init(events)
+      DriverService.init(events)
       updateLaps.initilize(events)
     }.recover {
       case ex: Throwable =>

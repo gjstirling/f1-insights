@@ -8,7 +8,7 @@ trait ApiClient {
   def get(route: String, params: Iterable[(String, String)]): Future[Either[String, Array[Byte]]]
 }
 
-class RealApiClient @Inject ()(implicit ec: ExecutionContext) extends ApiClient {
+class F1OpenApiClient @Inject ()(implicit ec: ExecutionContext) extends ApiClient {
   override def get(route: String, params: Iterable[(String, String)]): Future[Either[String, Array[Byte]]] = Future {
     try {
       val response = requests.get(s"${F1Api.BaseUrl}$route", params = params)
