@@ -9,9 +9,9 @@ import scala.util.{Failure, Success}
 import config.F1Api
 
 class EventsService @Inject()(
-                              val repository: EventsRepository,
-                              val f1Api: F1OpenApi
-                            )(implicit ec: ExecutionContext) {
+                               val repository: EventsRepository,
+                               val f1Api: F1OpenApi
+                             )(implicit ec: ExecutionContext) {
   def index(): Unit = {
     // Currently limiting to 2024 season and Qualifying only
     val paramsWithFilters: Iterable[(String, String)] = Seq(("year", "2024"), ("session_type", "Qualifying"))
@@ -32,7 +32,7 @@ class EventsService @Inject()(
     }
   }
 
-  def getEventList() = {
+  def getEventList: Future[Seq[Int]] = {
     repository.getSessionKeys(Map.empty)
   }
 }
