@@ -18,12 +18,14 @@ class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, D
 
     eventsFuture.flatMap { events =>
       MyLogger.blue("[MyTask][updateLaps]: Initializing lap times collection")
+      MyLogger.red("[MyTask][updateLaps]: EVENT LIST:  " + events)
+
       val driverServiceFuture = DriverService.init(events)
-      val updateLapsFuture = LapsService.initilize(events)
+      //val updateLapsFuture = LapsService.initilize(events)
 
       for {
         _ <- driverServiceFuture
-        _ <- updateLapsFuture
+        //_ <- updateLapsFuture
       } yield {
         MyLogger.blue("[MyTask][updateLaps]: Lap times collection initialized successfully.")
       }
