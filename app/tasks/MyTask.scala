@@ -13,8 +13,8 @@ class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, D
     EventsService.index()
   }
 
-  actorSystem.scheduler.scheduleOnce(3.minutes) {
-    val eventsFuture = EventsService.getEventList()
+  actorSystem.scheduler.scheduleOnce(1.minute) {
+    val eventsFuture = EventsService.getEventList
 
     eventsFuture.flatMap { events =>
       MyLogger.blue("[MyTask][updateLaps]: Initializing lap times collection")
@@ -40,29 +40,6 @@ class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, D
     MyLogger.blue("[MyTask][EventsService]: Running events job (checking for new events)")
     EventsService.index()
   }
-
-//  actorSystem.scheduler.scheduleAtFixedRate(
-//    initialDelay = 2.hours,
-//    interval = 1.days
-//  ) { () =>
-//    MyLogger.blue("[MyTask][update]: Running driver and laps job (checking for new drivers and lap times)")
-//    val eventsFuture = EventsService.getEventList()
-//
-//    eventsFuture.map { events =>
-//      val driverInitFuture = DriverService.init(events)
-//      val lapsInitFuture = LapsService.initilize(events)
-//
-//      for {
-//        _ <- driverInitFuture
-//        _ <- lapsInitFuture
-//      } yield {
-//        MyLogger.blue("[MyTask][update]: Driver and laps job completed.")
-//      }
-//    }.recover {
-//      case ex: Throwable =>
-//        MyLogger.red(s"Failed to initialize driver and lap times collection: $ex")
-//    }
-//  }
 
 }
 
