@@ -36,8 +36,7 @@ class DriverService @Inject()(
     }
   }
 
-  def init(eventKeyList: Seq[Int]): Unit = {
-
+  def init(eventKeyList: Seq[Int]): Future[Unit] = {
     val futureUpdates: Seq[Future[Unit]] = eventKeyList.map { eventKeyValue =>
       val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", eventKeyValue.toString))
       val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1Api.drivers, paramsWithFilters)
@@ -58,12 +57,6 @@ class DriverService @Inject()(
       }
     }
 
-    Future.sequence(futureUpdates).onComplete {
-      case Success(_) =>
-        MyLogger.blue("All driver updates completed.")
-      case Failure(ex) =>
-        MyLogger.red(s"Some driver updates failed: ${ex.getMessage}")
-    }
+    Future.sequence(futureUpdates).map(_ => ())
   }
-
 }
