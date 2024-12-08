@@ -33,6 +33,6 @@ class EventsService @Inject()(
   }
 
   def getEventList: Future[Seq[Int]] = {
-    repository.getSessionKeys(Map.empty)
+    repository.getSessionKeys
   }
 }

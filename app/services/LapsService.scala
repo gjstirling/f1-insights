@@ -14,14 +14,10 @@ class LapsService @Inject()(
                              val f1Api: F1OpenApi
                            )(implicit ec: ExecutionContext) {
 
-  def initilize(events: Seq[Int]): Future[Unit] = {
+  def processBatch(events: Seq[Int]): Future[Unit] = {
     val futureLaps: Seq[Future[Unit]] = events.map { key =>
       val params = Map("session_key" -> s"$key")
-      // Sleep for 200ms to stay within rate limits
-      Thread.sleep(200)
-      val apiCall = f1Api.lookup[List[Laps]](F1Api.laps, params)
-
-      apiCall.flatMap {
+      f1Api.lookup[List[Laps]](F1Api.laps, params).flatMap {
         case Right(result) =>
           repository.insert(result).map { _ =>
             MyLogger.blue(s"Successfully updated laps for session_key $key.")
@@ -37,5 +33,13 @@ class LapsService @Inject()(
     }
 
     Future.sequence(futureLaps).map(_ => ())
+  }
+
+  def init(events: Seq[Int]): Future[Unit] = {
+    val batches: Seq[Seq[Int]] = events.grouped(2).toSeq
+
+    batches.foldLeft(Future.successful(())) { (prevBatch, currentBatch) =>
+      prevBatch.flatMap(_ => processBatch(currentBatch))
+    }
   }
 }

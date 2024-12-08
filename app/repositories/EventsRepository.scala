@@ -35,8 +35,8 @@ class EventsRepository @Inject()(dbConnection: MongoDbConnection[Event])(implici
     }
   }
 
-  def getSessionKeys(params: Map[String, String]): Future[Seq[Int]] = {
-    findAll(params).map { events =>
+  def getSessionKeys: Future[Seq[Int]] = {
+    findAll(Map.empty).map { events =>
       events.map(_.session_key)
     }.recover {
       case ex: Throwable =>
