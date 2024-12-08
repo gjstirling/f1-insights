@@ -5,32 +5,36 @@ import repositories.EventsRepository
 import connectors.F1OpenApi
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
-import scala.util.{Failure, Success}
 import config.F1Api
 
 class EventsService @Inject()(
                                val repository: EventsRepository,
                                val f1Api: F1OpenApi
                              )(implicit ec: ExecutionContext) {
-  def index(): Unit = {
-    // Currently limiting to 2024 season and Qualifying only
+  def initialise(): Future[Unit] = {
     val paramsWithFilters: Iterable[(String, String)] = Seq(("year", "2024"), ("session_type", "Qualifying"))
+
     val eventsFuture: Future[Either[String, List[Event]]] = f1Api.lookup[List[Event]](F1Api.events, paramsWithFilters)
 
-    eventsFuture.onComplete {
-      case Success(Right(events)) =>
-        repository.insertEvents(events).onComplete {
-          case Success(_) =>
-            MyLogger.blue("Successfully updated events.")
-          case Failure(ex) =>
+    eventsFuture.flatMap {
+      case Right(events) =>
+        repository.insertEvents(events).map { _ =>
+          MyLogger.blue("Successfully updated events.")
+        }.recover {
+          case ex =>
             MyLogger.red(s"Error inserting events into repository: ${ex.getMessage}")
+            throw ex
         }
-      case Success(Left(errors)) =>
+      case Left(errors) =>
         MyLogger.red(s"Error fetching events: $errors")
-      case Failure(ex) =>
+        Future.failed(new Exception(errors))
+    }.recover {
+      case ex =>
         MyLogger.red(s"Exception occurred while updating events: ${ex.getMessage}")
+        Future.failed(ex)
     }
   }
+
 
   def getEventList: Future[Seq[Int]] = {
     repository.getSessionKeys(Map.empty)

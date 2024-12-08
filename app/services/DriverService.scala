@@ -3,60 +3,58 @@ package services
 import config.F1Api
 import connectors.F1OpenApi
 import models.Drivers
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.pattern.after
 import repositories.DriversRepository
 import upickle.default._
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.concurrent.duration._
+
 
 class DriverService @Inject()(
                                val repository: DriversRepository,
-                               val f1Api: F1OpenApi
+                               val f1Api: F1OpenApi,
+                               actorSystem: ActorSystem
                              )(implicit ec: ExecutionContext) {
 
   implicit val driverRw: ReadWriter[Drivers] = macroRW
 
-  def update(): Unit = {
-    val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", "latest"))
-    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1Api.drivers, paramsWithFilters)
+  private def delayedFuture[T](delay: FiniteDuration)(f: => Future[T]): Future[T] = {
+    after(delay, actorSystem.scheduler)(f)
+  }
 
-    futureDrivers.onComplete {
-      case Success(Right(drivers)) =>
-        repository.insertDrivers(drivers).onComplete {
-          case Success(_) =>
-            MyLogger.blue("Successfully updated drivers.")
-          case Failure(ex) =>
-            MyLogger.red(s"Error inserting drivers into repository: ${ex.getMessage}")
-        }
-      case Success(Left(errors)) =>
-        MyLogger.red(s"Error fetching drivers: $errors")
-      case Failure(ex) =>
-        MyLogger.red(s"Exception occurred while updating drivers: ${ex.getMessage}")
+  def addMultiple(eventKeys: Seq[Int], batchSize: Int = 5, delay: FiniteDuration = 1.second): Future[Unit] = {
+    val batches = eventKeys.grouped(batchSize).toSeq
+
+    def processBatch(batch: Seq[Int]): Future[Unit] = {
+      val batchFutures = batch.map(add)
+      Future.sequence(batchFutures).map(_ => ())
+    }
+
+    batches.foldLeft(Future.successful(())) { (acc, batch) =>
+      acc.flatMap(_ => delayedFuture(delay)(processBatch(batch)))
     }
   }
 
-  def init(eventKeyList: Seq[Int]): Future[Unit] = {
-    val futureUpdates: Seq[Future[Unit]] = eventKeyList.map { eventKeyValue =>
-      val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", eventKeyValue.toString))
-      val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1Api.drivers, paramsWithFilters)
+  def add(eventKey: Int): Future[Unit] = {
+    val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", eventKey.toString))
+    val futureDrivers: Future[Either[String, List[Drivers]]] = f1Api.lookup[List[Drivers]](F1Api.drivers, paramsWithFilters)
 
-      futureDrivers.flatMap {
-        case Right(drivers) =>
-          repository.insertDrivers(drivers).map { _ =>
-            MyLogger.blue(s"Successfully updated drivers for session_key $eventKeyValue.")
-          }.recover { case ex =>
-            MyLogger.red(s"Error inserting drivers for session_key $eventKeyValue: ${ex.getMessage}")
-          }
-        case Left(errors) =>
-          Future {
-            MyLogger.red(s"Error fetching drivers for session_key $eventKeyValue: $errors")
-          }
-      }.recover { case ex =>
-        MyLogger.red(s"Exception occurred while fetching drivers for session_key $eventKeyValue: ${ex.getMessage}")
-      }
+    futureDrivers.flatMap {
+      case Right(drivers) =>
+        repository.insertDrivers(drivers).map { _ =>
+          MyLogger.blue(s"Successfully updated drivers for session_key $eventKey.")
+        }.recover { case ex =>
+          MyLogger.red(s"Error inserting drivers for session_key $eventKey: ${ex.getMessage}")
+        }
+      case Left(errors) =>
+        Future {
+          MyLogger.red(s"Error fetching drivers for session_key $eventKey: $errors")
+        }
+    }.recover { case ex =>
+      MyLogger.red(s"Exception occurred while fetching drivers for session_key $eventKey: ${ex.getMessage}")
     }
-
-    Future.sequence(futureUpdates).map(_ => ())
   }
 }

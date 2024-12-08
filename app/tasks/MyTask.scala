@@ -1,45 +1,44 @@
 package tasks
 
 import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.util.Timeout
 import javax.inject.Inject
 import scala.concurrent.ExecutionContext
+import services.{DriverService, EventsService, MyLogger}
+
 import scala.concurrent.duration._
-import services.{MyLogger, DriverService, EventsService, LapsService}
 
-class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, DriverService: DriverService, LapsService: LapsService)(implicit ec: ExecutionContext) {
+class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, DriverService: DriverService) {
 
-  actorSystem.scheduler.scheduleOnce(1.second) {
-    MyLogger.blue("[MyTask][DriverService]: Initialising events collection")
-    EventsService.index()
-  }
+  implicit val ec: ExecutionContext = actorSystem.dispatcher
+  implicit val timeout: Timeout = Timeout(5.seconds)
 
-  actorSystem.scheduler.scheduleOnce(1.minute) {
-    val eventsFuture = EventsService.getEventList
+  private def scheduleTask(): Unit = {
+    actorSystem.scheduler.scheduleOnce(1.second) {
+      MyLogger.info("[MyTask] -- Initialising MongoDB Data")
+      MyLogger.blue("[MyTask][EVENTS]: Initialising events collection")
 
-    eventsFuture.flatMap { events =>
-      MyLogger.blue("[MyTask][updateLaps]: Initializing lap times collection")
-      val driverServiceFuture = DriverService.init(events)
-      val updateLapsFuture = LapsService.initilize(events)
+      val eventsFuture = EventsService.initialise()
 
-      for {
-        _ <- driverServiceFuture
-        _ <- updateLapsFuture
-      } yield {
-        MyLogger.blue("[MyTask][updateLaps]: Lap times collection initialized successfully.")
+      eventsFuture.flatMap { _ =>
+        val eventListFuture = EventsService.getEventList
+
+        eventListFuture.flatMap { events =>
+          MyLogger.blue("[MyTask][DRIVERS/LAPS]: Initializing lap times collection")
+          MyLogger.red("EVENT KEYS LIST: " + events)
+
+          val driverServiceFuture = DriverService.addMultiple(events, batchSize = 5, delay = 1.second)
+
+          driverServiceFuture.map { _ =>
+            MyLogger.blue("[MyTask][DRIVERS]: Driver Collections updated.")
+          }
+        }
+      }.recover {
+        case ex: Throwable =>
+          MyLogger.red(s"Failed to initialize lap times collection: $ex")
       }
-    }.recover {
-      case ex: Throwable =>
-        MyLogger.red(s"Failed to initialize lap times collection: $ex")
     }
   }
 
-  actorSystem.scheduler.scheduleAtFixedRate(
-    initialDelay = 1.hour,
-    interval = 1.days
-  ) { () =>
-    MyLogger.blue("[MyTask][EventsService]: Running events job (checking for new events)")
-    EventsService.index()
-  }
-
+  scheduleTask()
 }
-
