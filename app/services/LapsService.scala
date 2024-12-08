@@ -3,39 +3,56 @@ package services
 import connectors.F1OpenApi
 import models.Laps
 import repositories.LapsRepository
-
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import config.F1Api
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.pattern.after
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
 
 @Singleton
 class LapsService @Inject()(
                              val repository: LapsRepository,
-                             val f1Api: F1OpenApi
+                             val f1Api: F1OpenApi,
+                             actorSystem: ActorSystem
                            )(implicit ec: ExecutionContext) {
 
-  def initilize(events: Seq[Int]): Future[Unit] = {
-    val futureLaps: Seq[Future[Unit]] = events.map { key =>
-      val params = Map("session_key" -> s"$key")
-      // Sleep for 200ms to stay within rate limits
-      Thread.sleep(200)
-      val apiCall = f1Api.lookup[List[Laps]](F1Api.laps, params)
+  private def delayedFuture[T](delay: FiniteDuration)(f: => Future[T]): Future[T] = {
+    after(delay, actorSystem.scheduler)(f)
+  }
 
-      apiCall.flatMap {
-        case Right(result) =>
-          repository.insert(result).map { _ =>
-            MyLogger.blue(s"Successfully updated laps for session_key $key.")
-          }
-        case Left(errors) =>
-          Future {
-            MyLogger.red(s"Error fetching laps for session_key $key: $errors")
-          }
-      }.recover {
-        case ex =>
-          MyLogger.red(s"Exception occurred while updating laps for session_key $key: ${ex.getMessage}")
-      }
+  def addMultiple(eventKeys: Seq[Int], batchSize: Int = 5, delay: FiniteDuration = 1.second): Future[Unit] = {
+    val batches = eventKeys.grouped(batchSize).toSeq
+
+    def processBatch(batch: Seq[Int]): Future[Unit] = {
+      val batchFutures = batch.map(add)
+      Future.sequence(batchFutures).map(_ => ())
     }
 
-    Future.sequence(futureLaps).map(_ => ())
+    batches.foldLeft(Future.successful(())) { (acc, batch) =>
+      acc.flatMap(_ => delayedFuture(delay)(processBatch(batch)))
+    }
   }
+
+  def add(eventKey: Int): Future[Unit] = {
+    val paramsWithFilters: Iterable[(String, String)] = Seq(("session_key", eventKey.toString))
+    val futureDrivers: Future[Either[String, List[Laps]]] = f1Api.lookup[List[Laps]](F1Api.laps, paramsWithFilters)
+
+    futureDrivers.flatMap {
+      case Right(laps) =>
+        repository.insert(laps).map { _ =>
+          MyLogger.blue(s"Successfully updated laps for session_key $eventKey.")
+        }.recover { case ex =>
+          MyLogger.red(s"Error inserting laps for session_key $eventKey: ${ex.getMessage}")
+        }
+      case Left(errors) =>
+        Future {
+          MyLogger.red(s"Error fetching laps for session_key $eventKey: $errors")
+        }
+    }.recover { case ex =>
+      MyLogger.red(s"Exception occurred while fetching laps for session_key $eventKey: ${ex.getMessage}")
+    }
+  }
+
+
 }
