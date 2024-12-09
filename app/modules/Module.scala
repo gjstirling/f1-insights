@@ -6,7 +6,7 @@ import models._
 import org.mongodb.scala.bson.codecs.Macros
 import play.api.inject.ApplicationLifecycle
 import tasks.MyTask
-import repositories.{MongoDbConnectionManager, MongoDbFactory}
+import repositories.{MongoDbConnectionManager, MongoCollectionWrapper}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -17,24 +17,23 @@ class Module
     bind(classOf[MyTask]).asEagerSingleton()
   }
 
-  @Provides
-  def stopMongoClient(lifecycle: ApplicationLifecycle): Unit = {
+  def setupLifecycleHook(lifecycle: ApplicationLifecycle): Unit = {
     lifecycle.addStopHook { () =>
-      Future.successful(MongoDbFactory.close())
+      Future.successful(MongoDbConnectionManager.close())
     }
   }
 }
 
 object Module {
   @Provides
-  def provideEventsConnection(implicit ec: ExecutionContext): MongoDbConnectionManager[Event] =
-    new MongoDbConnectionManager[Event]("events", Macros.createCodecProvider[Event]())
+  def provideEventsConnection(implicit ec: ExecutionContext): MongoCollectionWrapper[Event] =
+    new MongoCollectionWrapper[Event]("events", Macros.createCodecProvider[Event]())
 
   @Provides
-  def provideDriversConnection(implicit ec: ExecutionContext): MongoDbConnectionManager[Drivers] =
-    new MongoDbConnectionManager[Drivers]("drivers", Macros.createCodecProvider[Drivers]())
+  def provideDriversConnection(implicit ec: ExecutionContext): MongoCollectionWrapper[Drivers] =
+    new MongoCollectionWrapper[Drivers]("drivers", Macros.createCodecProvider[Drivers]())
 
   @Provides
-  def provideLapsConnection(implicit ec: ExecutionContext): MongoDbConnectionManager[Laps] =
-    new MongoDbConnectionManager[Laps]("laps", Macros.createCodecProvider[Laps]())
+  def provideLapsConnection(implicit ec: ExecutionContext): MongoCollectionWrapper[Laps] =
+    new MongoCollectionWrapper[Laps]("laps", Macros.createCodecProvider[Laps]())
 }
