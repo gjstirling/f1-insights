@@ -51,7 +51,7 @@ the /events endpoint <br>
   }
 ]
 ```
-**request template:** `https://myservice-m3p2yzv7ma-uc.a.run.app/quali?driver_number=[DriverNumber]&session_key=[SessionKey]`
+**request template:** `https://f1insights-m3p2yzv7ma-uc.a.run.app/quali?driver_number=[DriverNumber]&session_key=[SessionKey]`
 
 ## Docker: 
 - set application secret <br>
@@ -63,6 +63,5 @@ the /events endpoint <br>
 
 
 ## TODO list:
-- Remove use of Mongo Client in each repository, inject mongo client directly
 - Catagorise drivers/events/laps by year
 - Create comparison endpoint for two drivers in a shared session
