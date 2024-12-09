@@ -6,12 +6,12 @@ import models.{LapData, Laps}
 import play.api.libs.json.{JsArray, Json}
 import play.api.mvc._
 import repositories.LapsRepository
-import services.Services.{convertToJsonArray, toMinutesAndSeconds}
+import services.Utilities.{convertToJsonArray, toMinutesAndSeconds}
 import upickle.default._
 
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
-import services.{MyLogger, Services}
+import services.{MyLogger, Utilities}
 
 
 @Singleton
@@ -40,7 +40,7 @@ class LapsController @Inject()(val controllerComponents: ControllerComponents, r
   }
 
   def findByDriverNumberAndSession: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    val params: Map[String, String] = Services.extractParams(request).toMap
+    val params: Map[String, String] = Utilities.extractParams(request).toMap
     val route = "/laps"
 
     val driverNumber = params.get("driver_number")
