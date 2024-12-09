@@ -2,7 +2,7 @@ package repositories
 
 import base.UnitSpec
 
-class MongoDbConnectionSpec extends UnitSpec {
+class MongoDbConnectionManagerSpec extends UnitSpec {
 
   // Tests for Mongo connection (Create dummy class for testing ?)
 

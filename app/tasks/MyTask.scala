@@ -27,8 +27,8 @@ class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, D
           val driverServiceFuture = DriverService.addMultiple(events, batchSize = 5, delay = 1.second)
 
           driverServiceFuture.map { _ =>
-            scheduleLapsTask(events)
             MyLogger.blue("[MyTask][DRIVERS]: Driver Collections updated.")
+            scheduleLapsTask(events)
           }
         }
       }.recover {
@@ -39,7 +39,7 @@ class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, D
 
   private def scheduleLapsTask(events: Seq[Int]): Unit = {
         MyLogger.blue("[MyTask][LAPS]: Initializing lap times collection")
-        val lapsServiceFuture = LapsService.addMultiple(events, batchSize = 5, delay = 1.second)
+        val lapsServiceFuture = LapsService.addMultiple(events)
 
         lapsServiceFuture.map { _ =>
           MyLogger.blue("[MyTask][LAPS]: LAPS Collections updated.")

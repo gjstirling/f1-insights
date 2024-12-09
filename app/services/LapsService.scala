@@ -3,12 +3,14 @@ package services
 import connectors.F1OpenApi
 import models.Laps
 import repositories.LapsRepository
+
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import config.F1Api
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.pattern.after
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
+import config.MyAppConfig._
 
 @Singleton
 class LapsService @Inject()(
@@ -21,7 +23,7 @@ class LapsService @Inject()(
     after(delay, actorSystem.scheduler)(f)
   }
 
-  def addMultiple(eventKeys: Seq[Int], batchSize: Int = 5, delay: FiniteDuration = 1.second): Future[Unit] = {
+  def addMultiple(eventKeys: Seq[Int])(implicit batchSize: Int = BatchSize, delay: FiniteDuration = promiseDelay.second): Future[Unit] = {
     val batches = eventKeys.grouped(batchSize).toSeq
 
     def processBatch(batch: Seq[Int]): Future[Unit] = {
