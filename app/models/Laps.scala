@@ -1,7 +1,7 @@
 package models
 
 import play.api.libs.json.{Json, OFormat}
-import services.Services.toMinutesAndSeconds
+import services.Utilities.toMinutesAndSeconds
 
 case class Laps (
                            date_start: String,

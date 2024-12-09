@@ -8,7 +8,6 @@ import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import config.F1Api
 import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.pattern.after
 import scala.concurrent.duration.{DurationInt, FiniteDuration}
 import config.MyAppConfig._
 
@@ -16,24 +15,11 @@ import config.MyAppConfig._
 class LapsService @Inject()(
                              val repository: LapsRepository,
                              val f1Api: F1OpenApi,
-                             actorSystem: ActorSystem
-                           )(implicit ec: ExecutionContext) {
+                           )(implicit ec: ExecutionContext, actorSystem: ActorSystem)
+{
 
-  private def delayedFuture[T](delay: FiniteDuration)(f: => Future[T]): Future[T] = {
-    after(delay, actorSystem.scheduler)(f)
-  }
-
-  def addMultiple(eventKeys: Seq[Int])(implicit batchSize: Int = BatchSize, delay: FiniteDuration = promiseDelay.second): Future[Unit] = {
-    val batches = eventKeys.grouped(batchSize).toSeq
-
-    def processBatch(batch: Seq[Int]): Future[Unit] = {
-      val batchFutures = batch.map(add)
-      Future.sequence(batchFutures).map(_ => ())
-    }
-
-    batches.foldLeft(Future.successful(())) { (acc, batch) =>
-      acc.flatMap(_ => delayedFuture(delay)(processBatch(batch)))
-    }
+  def addMultiple(eventKeys: Seq[Int]): Future[Unit] = {
+    BatchProcessorService.processInBatches(eventKeys)(add)(actorSystem, ec)
   }
 
   def add(eventKey: Int): Future[Unit] = {

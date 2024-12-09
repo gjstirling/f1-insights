@@ -1,5 +1,7 @@
 package config
 
+import scala.concurrent.duration.{DurationInt, FiniteDuration}
+
 object MyAppConfig {
   val toleranceForLaps = 1.10
   val username: String = scala.sys.env("DB_USERNAME")
@@ -7,8 +9,8 @@ object MyAppConfig {
   val database: String = scala.sys.env("DATABASE")
   val connectionString = s"mongodb+srv://$username:$password@cluster0.zobrk9b.mongodb.net/"
 
-  val BatchSize = 3
-  val promiseDelay = 1
+  val BatchSize = 10
+  val promiseDelay: FiniteDuration = 20.millisecond
 }
 
 object F1Api {

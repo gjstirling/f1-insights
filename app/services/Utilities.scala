@@ -6,7 +6,7 @@ import play.api.mvc.{AnyContent, Request}
 import play.api.libs.json._
 import upickle.default._
 
-object Services {
+object Utilities {
   def extractParams(request: Request[AnyContent]): Iterable[(String, String)] = {
     request.queryString.flatMap {
       case (key, values) =>
@@ -41,5 +41,4 @@ object Services {
         List.empty[Laps]
     }
   }
-
 }

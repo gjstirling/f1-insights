@@ -3,40 +3,24 @@ package services
 import config.F1Api
 import connectors.F1OpenApi
 import models.Drivers
-import org.apache.pekko.actor.ActorSystem
-import org.apache.pekko.pattern.after
 import repositories.DriversRepository
 import upickle.default._
-
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import config.MyAppConfig._
+import org.apache.pekko.actor.ActorSystem
 
 
 class DriverService @Inject()(
                                val repository: DriversRepository,
-                               val f1Api: F1OpenApi,
-                               actorSystem: ActorSystem
-                             )(implicit ec: ExecutionContext) {
+                               val f1Api: F1OpenApi
+                             )(implicit ec: ExecutionContext, actorSystem: ActorSystem) {
 
   implicit val driverRw: ReadWriter[Drivers] = macroRW
 
-  private def delayedFuture[T](delay: FiniteDuration)(f: => Future[T]): Future[T] = {
-    after(delay, actorSystem.scheduler)(f)
-  }
-
-  def addMultiple(eventKeys: Seq[Int], batchSize: Int = BatchSize, delay: FiniteDuration = promiseDelay.second): Future[Unit] = {
-    val batches = eventKeys.grouped(batchSize).toSeq
-
-    def processBatch(batch: Seq[Int]): Future[Unit] = {
-      val batchFutures = batch.map(add)
-      Future.sequence(batchFutures).map(_ => ())
-    }
-
-    batches.foldLeft(Future.successful(())) { (acc, batch) =>
-      acc.flatMap(_ => delayedFuture(delay)(processBatch(batch)))
-    }
+  def addMultiple(eventKeys: Seq[Int]): Future[Unit] = {
+    BatchProcessorService.processInBatches(eventKeys)(add)(actorSystem, ec)
   }
 
   def add(eventKey: Int): Future[Unit] = {

@@ -1,33 +1,27 @@
 package tasks
 
-import org.apache.pekko.actor.ActorSystem
-
 import javax.inject.Inject
-import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.Await
 import services.{DriverService, EventsService, LapsService, MyLogger}
-
 import scala.concurrent.duration._
 
-class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, DriverService: DriverService, LapsService: LapsService) {
-
-  implicit val ec: ExecutionContext = actorSystem.dispatcher
+class MyTask @Inject()( EventsService: EventsService, DriverService: DriverService, LapsService: LapsService) {
 
   private def scheduleTask(): Unit = {
     MyLogger.info("[MyTask] -- Initialising MongoDB Data")
     MyLogger.blue("[MyTask][EVENTS]: Initialising events collection")
-    Await.result(EventsService.initialise(), 2.minutes)
-    val events = Await.result(EventsService.getEventList, 2.minutes)
+    val events = Await.result(EventsService.initialise(), 2.minutes)
 
     addDrivers(events)
   }
 
-  def addDrivers(events: Seq[Int])= {
+  private def addDrivers(events: Seq[Int]): Unit = {
     Await.result(DriverService.addMultiple(events), 2.minutes)
 
     addLaps(events)
   }
 
-  def addLaps(events: Seq[Int])= {
+  private def addLaps(events: Seq[Int]): Unit = {
     Await.result(LapsService.addMultiple(events), 4.minutes)
   }
 
