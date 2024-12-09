@@ -14,7 +14,7 @@ class F1OpenApiClient @Inject ()(implicit ec: ExecutionContext) extends ApiClien
       val response = requests.get(s"${F1Api.BaseUrl}$route", params = params)
       Right(response.data.array)
     } catch {
-      case ex: Exception => Left(ex.getMessage)
+      case ex: Exception => Left("API ERROR:    " + ex.getMessage)
     }
   }
 }
