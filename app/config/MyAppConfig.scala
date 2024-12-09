@@ -7,7 +7,7 @@ object MyAppConfig {
   val database: String = scala.sys.env("DATABASE")
   val connectionString = s"mongodb+srv://$username:$password@cluster0.zobrk9b.mongodb.net/"
 
-  val BatchSize = 5
+  val BatchSize = 3
   val promiseDelay = 1
 }
 
