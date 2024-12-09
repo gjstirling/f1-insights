@@ -11,6 +11,7 @@ import upickle.default._
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import config.MyAppConfig._
 
 
 class DriverService @Inject()(
@@ -25,7 +26,7 @@ class DriverService @Inject()(
     after(delay, actorSystem.scheduler)(f)
   }
 
-  def addMultiple(eventKeys: Seq[Int], batchSize: Int = 5, delay: FiniteDuration = 1.second): Future[Unit] = {
+  def addMultiple(eventKeys: Seq[Int], batchSize: Int = BatchSize, delay: FiniteDuration = promiseDelay.second): Future[Unit] = {
     val batches = eventKeys.grouped(batchSize).toSeq
 
     def processBatch(batch: Seq[Int]): Future[Unit] = {

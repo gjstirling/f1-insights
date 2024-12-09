@@ -12,7 +12,7 @@ import models.Event
 class EventsRepositorySpec extends UnitSpec {
 
   val mockParams: Map[String, String] = Map("key1" -> "value1", "key2" -> "value2")
-  val mockDatabase: MongoDbConnection[Event] = mock[MongoDbConnection[Event]]
+  val mockDatabase: MongoDbConnectionManager[Event] = mock[MongoDbConnectionManager[Event]]
   val repository = new EventsRepository(mockDatabase)
   val bulkWrites: Seq[ReplaceOneModel[Event]] = mockEventList.map { obj =>
     val filter = Filters.eq("session_key", obj.session_key)

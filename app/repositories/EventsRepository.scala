@@ -8,7 +8,7 @@ import services.MyLogger
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class EventsRepository @Inject()(dbConnection: MongoDbConnection[Event])(implicit ec: ExecutionContext) {
+class EventsRepository @Inject()(dbConnection: MongoCollectionWrapper[Event])(implicit ec: ExecutionContext) {
 
   def insertEvents(events: Seq[Event]): Future[Unit] = {
     MyLogger.info(s"[EventsRepository][insert]:")

@@ -8,37 +8,32 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class DriversRepository @Inject()(dbConnection: MongoDbConnection[Drivers])(implicit ec: ExecutionContext) {
-
-  private def updateAndUpsert(data: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
-    val filteredData = data.filter(_.team_name.isDefined)
-
-    filteredData.map { obj =>
-      val teamNameFilter = obj.team_name match {
-        case Some(teamName) => Filters.eq("team_name", teamName)
-      }
-
-      val filter = Filters.and(
-        Filters.eq("full_name", obj.full_name),
-        teamNameFilter
-      )
-
-      ReplaceOneModel(filter, obj, ReplaceOptions().upsert(true))
-    }
-  }
+class DriversRepository @Inject()(dbConnection: MongoCollectionWrapper[Drivers])(implicit ec: ExecutionContext) {
 
   def insertDrivers(data: Seq[Drivers]): Future[Unit] = {
     val bulkWrites = updateAndUpsert(data)
-    MyLogger.info(s"[DriversRepository][insert]:")
-    dbConnection.insert(bulkWrites)
+    MyLogger.info(s"[DriversRepository][insertDrivers]: Starting bulk insert for ${data.size} drivers")
+    dbConnection.insert(bulkWrites).map { _ =>
+      MyLogger.info(s"[DriversRepository][insertDrivers]: Bulk insert completed")
+    }
   }
 
   def findAll(params: Map[String, String]): Future[Seq[Drivers]] = {
-    val filter = Document()
-    dbConnection.findAll(params, filter)
+    MyLogger.info(s"[DriversRepository][findAll]: Fetching drivers with params: $params")
+    dbConnection.findAll(params, Document())
   }
 
+  private def updateAndUpsert(data: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {
+    data.filter(_.team_name.isDefined).map { obj =>
+      val filter = Filters.and(
+        Filters.eq("full_name", obj.full_name),
+        Filters.eq("team_name", obj.team_name.get)
+      )
+      ReplaceOneModel(filter, obj, ReplaceOptions().upsert(true))
+    }
+  }
 }
+
 
 
 

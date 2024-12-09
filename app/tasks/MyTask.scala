@@ -27,8 +27,8 @@ class MyTask @Inject()(actorSystem: ActorSystem, EventsService: EventsService, D
           val driverServiceFuture = DriverService.addMultiple(events, batchSize = 5, delay = 1.second)
 
           driverServiceFuture.map { _ =>
-            scheduleLapsTask(events)
             MyLogger.blue("[MyTask][DRIVERS]: Driver Collections updated.")
+            scheduleLapsTask(events)
           }
         }
       }.recover {

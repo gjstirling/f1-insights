@@ -9,7 +9,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class LapsRepository @Inject()(dbConnection: MongoDbConnection[Laps])(implicit ec: ExecutionContext) {
+class LapsRepository @Inject()(dbConnection: MongoCollectionWrapper[Laps])(implicit ec: ExecutionContext) {
 
   private def updateAndUpsert(data: Seq[Laps]): Seq[ReplaceOneModel[Laps]] = {
     data.map { obj =>

@@ -12,7 +12,7 @@ import scala.concurrent.Future
 class DriversRepositorySpec extends UnitSpec {
 
   val mockParams: Map[String, String] = Map("key1" -> "value1", "key2" -> "value2")
-  val mockDatabase: MongoDbConnection[Drivers] = mock[MongoDbConnection[Drivers]]
+  val mockDatabase: MongoDbConnectionManager[Drivers] = mock[MongoDbConnectionManager[Drivers]]
   val repository = new DriversRepository(mockDatabase)
   val bulkWrites: Seq[ReplaceOneModel[Drivers]] = mockDriversList.map { obj =>
     val filter = Filters.eq("full_name", obj.full_name)
