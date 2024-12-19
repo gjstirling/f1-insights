@@ -1,6 +1,6 @@
 package services
 
-import config.MyAppConfig.{BatchSize, promiseDelay}
+import config.F1Api.{BatchSize, promiseDelay}
 import org.apache.pekko.actor.ActorSystem
 import org.apache.pekko.pattern.after
 import scala.concurrent.{ExecutionContext, Future}

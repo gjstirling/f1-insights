@@ -36,4 +36,8 @@ object Module {
   @Provides
   def provideLapsConnection(implicit ec: ExecutionContext): MongoCollectionWrapper[Laps] =
     new MongoCollectionWrapper[Laps]("laps", Macros.createCodecProvider[Laps]())
+
+  @Provides
+  def provideSessionDataConnection(implicit ec: ExecutionContext): MongoCollectionWrapper[SessionData] =
+    new MongoCollectionWrapper[SessionData]("SessionData", Macros.createCodecProvider[SessionData]())
 }

@@ -2,9 +2,10 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 import services.Utilities.toMinutesAndSeconds
+import java.time.Instant
 
 case class Laps (
-                           date_start: String,
+                           date_start: Instant,
                            driver_number: Int,
                            duration_sector_1: Option[Double],
                            duration_sector_2: Option[Double],

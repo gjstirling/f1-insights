@@ -1,12 +1,13 @@
 package models
 
 import play.api.libs.json.{Json, OFormat}
+import java.time.Instant
 
 case class Event(
                   session_key: Int,
                   session_name: String,
-                  date_start: String,
-                  date_end: String,
+                  date_start: Instant,
+                  date_end: Instant,
                   gmt_offset: String,
                   session_type: String,
                   meeting_key: Int,
@@ -35,6 +36,7 @@ object Event {
       event.location,
       event.country_name
     )
+
 }
 
 object ShortEvent {
