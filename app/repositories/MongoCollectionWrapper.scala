@@ -1,9 +1,6 @@
 package repositories
 
-import config.MyAppConfig.{connectionString, database}
 import org.bson.codecs.configuration.CodecProvider
-import org.bson.codecs.configuration.CodecRegistries.{fromProviders, fromRegistries}
-import org.mongodb.scala.MongoClient.DEFAULT_CODEC_REGISTRY
 import org.mongodb.scala.bson.{BsonInt32, BsonString}
 import org.mongodb.scala.{Document, _}
 import org.mongodb.scala.model.ReplaceOneModel

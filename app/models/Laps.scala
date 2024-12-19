@@ -26,6 +26,7 @@ object Laps {
       lap.lap_duration match {
         case Some(duration) if duration > 0 =>
           Some(LapData(
+            timestamp = lap.date_start,
             lap_number = lap.lap_number,
             sector_1 = lap.duration_sector_1.getOrElse(0),
             sector_2 = lap.duration_sector_2.getOrElse(0),
@@ -41,6 +42,7 @@ object Laps {
 }
 
 case class LapData(
+                    timestamp: Instant,
                     lap_number: Int,
                     sector_1: Double,
                     sector_2: Double,

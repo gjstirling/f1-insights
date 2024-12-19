@@ -37,4 +37,10 @@ class SessionDataService @Inject()(
       MyLogger.red(s"Exception occurred while fetching session data for session_key $eventKey: ${ex.getMessage}")
     }
   }
+
+  def find(): Future[Seq[SessionData]] = {
+    repository.getBySessionKey(9658)
+  }
+
+
 }

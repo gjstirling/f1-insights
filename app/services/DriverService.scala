@@ -4,12 +4,10 @@ import config.F1Api
 import connectors.F1OpenApi
 import models.Drivers
 import repositories.DriversRepository
-import upickle.default._
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration._
-import config.MyAppConfig._
 import org.apache.pekko.actor.ActorSystem
+import play.api.libs.json.{Json, OFormat}
 
 
 class DriverService @Inject()(
@@ -17,7 +15,7 @@ class DriverService @Inject()(
                                val f1Api: F1OpenApi
                              )(implicit ec: ExecutionContext, actorSystem: ActorSystem) {
 
-  implicit val driverRw: ReadWriter[Drivers] = macroRW
+  implicit val driverFormat: OFormat[Drivers] = Json.format[Drivers]
 
   def addMultiple(eventKeys: Seq[Int]): Future[Unit] = {
     BatchProcessorService.processInBatches(eventKeys)(add)(actorSystem, ec)

@@ -1,10 +1,13 @@
 package repositories
 
 import models.SessionData
+import org.mongodb.scala.Document
 import services.MyLogger
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import org.mongodb.scala.model._
+import play.api.mvc.Filter
 
 @Singleton
 class SessionDataRepository @Inject()(dbConnection: MongoCollectionWrapper[SessionData])(implicit ec: ExecutionContext) {
@@ -28,6 +31,19 @@ class SessionDataRepository @Inject()(dbConnection: MongoCollectionWrapper[Sessi
         MyLogger.red(s"[SessionDataRepository][insertData]: Failed to upsert data: ${ex.getMessage}")
     }
   }
+
+    def getBySessionKey(sessionKey: Int): Future[Seq[SessionData]] = {
+      val params: Map[String, Any] = Map(
+        "session_key" -> sessionKey,
+        "message" -> "GREEN LIGHT - PIT EXIT OPEN",
+      )
+
+      dbConnection.findAll(params, Document()).recover {
+        case ex: Throwable =>
+          MyLogger.red(s"Failed to find events, $ex")
+          Seq.empty[SessionData]
+      }
+    }
 }
 
 

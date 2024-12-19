@@ -1,48 +1,20 @@
 package controllers
 
 import config.MyAppConfig.toleranceForLaps
-import connectors.F1OpenApi
 import models.{LapData, Laps}
-import play.api.libs.json.{JsArray, Json}
+import play.api.libs.json.{Format, JsArray, JsValue, Json, Writes}
 import play.api.mvc._
 import repositories.LapsRepository
-import services.Utilities.{convertToJsonArray, toMinutesAndSeconds}
-import upickle.default._
-
+import services.Utilities.toMinutesAndSeconds
 import scala.concurrent.{ExecutionContext, Future}
 import javax.inject._
-import services.{MyLogger, Utilities}
-
+import services.Utilities
 
 @Singleton
 class LapsController @Inject()(val controllerComponents: ControllerComponents, repository: LapsRepository)(implicit executionContext: ExecutionContext) extends BaseController {
 
-  private def sortAndFilterLaps(laps: List[Laps]): List[Laps] = {
-    val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
-    val fastestLapOpt = sortedLaps.headOption.flatMap(_.lap_duration)
-
-    fastestLapOpt match {
-      case Some(fastestLap) =>
-        val filteredLaps = sortedLaps.filter { lap =>
-          lap.lap_duration.exists(_ <= fastestLap * toleranceForLaps
-          )
-        }
-        filteredLaps.sortBy(_.lap_number)
-
-      case None =>
-        List.empty[Laps]
-    }
-  }
-
-  private def findAverageLaptime(laps: List[Laps]): JsArray = {
-    val average = laps.flatMap(_.lap_duration).sum / laps.length
-    Json.arr(Json.obj("average_laptime" -> toMinutesAndSeconds(average)))
-  }
-
   def findByDriverNumberAndSession: Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val params: Map[String, String] = Utilities.extractParams(request).toMap
-    val route = "/laps"
-
     val driverNumber = params.get("driver_number")
     val sessionKey = params.get("session_key")
 
@@ -58,7 +30,7 @@ class LapsController @Inject()(val controllerComponents: ControllerComponents, r
             if (hotLaps.isEmpty) {
               Ok(s"No completed laps for driver_number: ${driverNumber.get} and session_key:${sessionKey.get}")
             } else {
-              implicit val ReadWriter: ReadWriter[LapData] = macroRW
+              implicit val lapDataFormat: Format[LapData] = Json.format[LapData]
               val laps = Laps.toLapData(hotLaps)
               val jsonLaps = convertToJsonArray(laps)
               Ok(jsonLaps ++ averageLap)
@@ -74,6 +46,33 @@ class LapsController @Inject()(val controllerComponents: ControllerComponents, r
 
       case _ =>
         Future.successful(BadRequest("Missing required parameters: 'driver_number' and/or 'session_key'"))
+    }
+  }
+
+  private def convertToJsonArray[T](list: List[T])(implicit writes: Writes[T]): JsArray = {
+    val jsonList: List[JsValue] = list.map(Json.toJson(_))
+    JsArray(jsonList)
+  }
+
+  private def findAverageLaptime(laps: List[Laps]): JsArray = {
+    val average = laps.flatMap(_.lap_duration).sum / laps.length
+    Json.arr(Json.obj("average_laptime" -> toMinutesAndSeconds(average)))
+  }
+
+  private def sortAndFilterLaps(laps: List[Laps]): List[Laps] = {
+    val sortedLaps = laps.sortBy(_.lap_duration.getOrElse(Double.MaxValue))
+    val fastestLapOpt = sortedLaps.headOption.flatMap(_.lap_duration)
+
+    fastestLapOpt match {
+      case Some(fastestLap) =>
+        val filteredLaps = sortedLaps.filter { lap =>
+          lap.lap_duration.exists(_ <= fastestLap * toleranceForLaps
+          )
+        }
+        filteredLaps.sortBy(_.lap_number)
+
+      case None =>
+        List.empty[Laps]
     }
   }
 }

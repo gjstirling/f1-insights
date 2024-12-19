@@ -1,6 +1,6 @@
 package repositories
 
-import base.TestData.mockEventList
+import .mockEventList
 import base.UnitSpec
 import org.mockito.Mockito._
 import org.mongodb.scala.model.{Filters, ReplaceOneModel, ReplaceOptions}

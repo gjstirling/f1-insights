@@ -1,7 +1,6 @@
 package controllers
 
 import base.ControllersSpecWithGuiceApp
-import base.TestData.{mockDriversList, mockEventList}
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatest.matchers.must.Matchers._

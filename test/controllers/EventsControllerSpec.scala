@@ -1,7 +1,7 @@
 package controllers
 
 import base.ControllersSpecWithGuiceApp
-import base.TestData.mockEventList
+import .mockEventList
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
