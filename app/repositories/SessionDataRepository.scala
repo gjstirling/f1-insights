@@ -2,6 +2,7 @@ package repositories
 
 import models.SessionData
 import org.mongodb.scala.Document
+import org.mongodb.scala.bson.{BsonInt32, BsonString}
 import services.MyLogger
 
 import javax.inject.{Inject, Singleton}
@@ -32,18 +33,26 @@ class SessionDataRepository @Inject()(dbConnection: MongoCollectionWrapper[Sessi
     }
   }
 
-    def getBySessionKey(sessionKey: Int): Future[Seq[SessionData]] = {
-      val params: Map[String, Any] = Map(
-        "session_key" -> sessionKey,
-        "message" -> "GREEN LIGHT - PIT EXIT OPEN",
+  def getBySessionKey(sessionKey: Int): Future[Seq[SessionData]] = {
+    val filter = Document(
+      "$and" -> Seq(
+        Document("session_key" -> sessionKey),
+        Document(
+          "$or" -> Seq(
+            Document("flag" -> "GREEN"),
+            Document("flag" -> "CHEQUERED")
+          )
+        )
       )
+    )
+    val sort = Document("date" -> 1)
 
-      dbConnection.findAll(params, Document()).recover {
-        case ex: Throwable =>
-          MyLogger.red(s"Failed to find events, $ex")
-          Seq.empty[SessionData]
-      }
+    dbConnection.findAll(filter, sort).recover {
+      case ex: Throwable =>
+        MyLogger.red(s"Failed to find events, $ex")
+        Seq.empty[SessionData]
     }
+  }
 }
 
 

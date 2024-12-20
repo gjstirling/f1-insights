@@ -16,21 +16,12 @@ class MongoCollectionWrapper[T: ClassTag] @Inject()(collectionName: String, code
   private val db: MongoDatabase = MongoDbConnectionManager.getDatabase(codec)
   private val collection = db.getCollection[T](collectionName)
 
-  def findAll(params: Map[String, Any], order: Document): Future[Seq[T]] = {
-    val query = buildQuery(params)
-    handleDbOperation(collection.find(query).sort(order).toFuture(), "findAll")
+  def findAll(filter: Document, order: Document): Future[Seq[T]] = {
+    handleDbOperation(collection.find(filter).sort(order).toFuture(), "findAll")
   }
 
   def insert(bulkWrites: Seq[ReplaceOneModel[T]]): Future[Unit] = {
     handleDbOperation(collection.bulkWrite(bulkWrites).toFuture(), "insert").map(_ => ())
-  }
-
-  private def buildQuery(params: Map[String, Any]): Document = {
-    Document(params.map {
-      case (key, value: String)  => key -> BsonString(value)
-      case (key, value: Int)     => key -> BsonInt32(value)
-      case (key, _)              => throw new IllegalArgumentException(s"Unsupported type for key $key")
-    })
   }
 
   private def handleDbOperation[R](operation: => Future[R], operationName: String): Future[R] = {
