@@ -3,12 +3,11 @@ package services
 import connectors.F1OpenApi
 import repositories.SessionDataRepository
 import config.F1Api
-import models.{Session, SessionData}
+import models.SessionData
 import org.apache.pekko.actor.ActorSystem
 
 import javax.inject._
 import scala.concurrent.{ExecutionContext, Future}
-import services._
 
 class SessionDataService @Inject()(
                                val repository: SessionDataRepository,
