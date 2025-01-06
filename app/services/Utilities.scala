@@ -10,10 +10,10 @@ object Utilities {
     }
   }
 
-  def toMinutesAndSeconds(lapTime: Double ): String = {
-    val minutes = if (lapTime > 60.00) 1
-    val seconds = ((lapTime - 60) * 1000).round / 1000.toDouble
-    s"${minutes}m$seconds"
+  def toMinutesAndSeconds(lapTime: Double): String = {
+    val minutes = (lapTime / 60).toInt
+    val seconds = lapTime % 60
+    f"${minutes}m${seconds}%.2fs"
   }
 }
 

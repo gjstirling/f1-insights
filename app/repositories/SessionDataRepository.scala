@@ -2,13 +2,11 @@ package repositories
 
 import models.SessionData
 import org.mongodb.scala.Document
-import org.mongodb.scala.bson.{BsonInt32, BsonString}
 import services.MyLogger
 
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import org.mongodb.scala.model._
-import play.api.mvc.Filter
 
 @Singleton
 class SessionDataRepository @Inject()(dbConnection: MongoCollectionWrapper[SessionData])(implicit ec: ExecutionContext) {

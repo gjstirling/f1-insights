@@ -16,6 +16,3 @@ case class SessionData(
 object SessionData {
   implicit val format: OFormat[SessionData] = Json.format[SessionData]
 }
-
-
-

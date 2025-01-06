@@ -1,7 +1,6 @@
 package repositories
 
 import org.bson.codecs.configuration.CodecProvider
-import org.mongodb.scala.bson.{BsonInt32, BsonString}
 import org.mongodb.scala.{Document, _}
 import org.mongodb.scala.model.ReplaceOneModel
 import services.MyLogger
@@ -12,7 +11,6 @@ import scala.util.{Failure, Success}
 
 @Singleton
 class MongoCollectionWrapper[T: ClassTag] @Inject()(collectionName: String, codec: CodecProvider)(implicit ec: ExecutionContext) {
-
   private val db: MongoDatabase = MongoDbConnectionManager.getDatabase(codec)
   private val collection = db.getCollection[T](collectionName)
 
