@@ -2,6 +2,7 @@ package repositories
 
 import models.Laps
 import org.mongodb.scala.Document
+import org.mongodb.scala.bson.{BsonInt32, BsonString}
 import org.mongodb.scala.model.{Filters, ReplaceOneModel, ReplaceOptions}
 import services.MyLogger
 
@@ -39,7 +40,10 @@ class LapsRepository @Inject()(dbConnection: MongoCollectionWrapper[Laps])(impli
 
     (driverNumberOpt, sessionKeyOpt) match {
       case (Some(driverNumber), Some(sessionKey)) =>
-        val filter = Map("driver_number" -> driverNumber, "session_key" -> sessionKey)
+        val mappedParams = Map("driver_number" -> driverNumber, "session_key" -> sessionKey)
+        val filter = Document(mappedParams.map {
+          case (key, value: Int)     => key -> BsonInt32(value)
+        })
 
         dbConnection.findAll(filter, order).map { results =>
           if (results.nonEmpty) {

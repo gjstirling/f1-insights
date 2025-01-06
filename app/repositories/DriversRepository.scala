@@ -2,8 +2,10 @@ package repositories
 
 import models.Drivers
 import org.mongodb.scala.Document
+import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.model._
 import services.MyLogger
+
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -20,7 +22,12 @@ class DriversRepository @Inject()(dbConnection: MongoCollectionWrapper[Drivers])
 
   def findAll(params: Map[String, String]): Future[Seq[Drivers]] = {
     MyLogger.info(s"[DriversRepository][findAll]: Fetching drivers with params: $params")
-    dbConnection.findAll(params, Document())
+    val query =  Document(params.map {
+      case (key, value: String)  => key -> BsonString(value)
+      case (key, _)              => throw new IllegalArgumentException(s"Unsupported type for key $key")
+    })
+
+    dbConnection.findAll(query, Document())
   }
 
   private def updateAndUpsert(data: Seq[Drivers]): Seq[ReplaceOneModel[Drivers]] = {

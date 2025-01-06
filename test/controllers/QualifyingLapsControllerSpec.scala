@@ -1,6 +1,5 @@
 package controllers
 
-import base.TestData._
 import base.ControllersSpecWithGuiceApp
 import models.{LapData, Laps}
 import org.mockito.ArgumentMatchers.{any, anyString}

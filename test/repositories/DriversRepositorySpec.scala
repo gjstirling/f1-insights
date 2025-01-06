@@ -1,6 +1,6 @@
 package repositories
 
-import base.TestData.mockDriversList
+import .mockDriversList
 import base.UnitSpec
 import models.Drivers
 import org.mockito.ArgumentMatchers.any

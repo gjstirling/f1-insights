@@ -2,9 +2,10 @@ package models
 
 import play.api.libs.json.{Json, OFormat}
 import services.Utilities.toMinutesAndSeconds
+import java.time.Instant
 
 case class Laps (
-                           date_start: String,
+                           date_start: Instant,
                            driver_number: Int,
                            duration_sector_1: Option[Double],
                            duration_sector_2: Option[Double],
@@ -25,6 +26,7 @@ object Laps {
       lap.lap_duration match {
         case Some(duration) if duration > 0 =>
           Some(LapData(
+            timestamp = lap.date_start,
             lap_number = lap.lap_number,
             sector_1 = lap.duration_sector_1.getOrElse(0),
             sector_2 = lap.duration_sector_2.getOrElse(0),
@@ -40,6 +42,7 @@ object Laps {
 }
 
 case class LapData(
+                    timestamp: Instant,
                     lap_number: Int,
                     sector_1: Double,
                     sector_2: Double,

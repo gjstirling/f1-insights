@@ -2,7 +2,8 @@ package tasks
 
 import javax.inject.Inject
 import scala.concurrent.Await
-import services.{DriverService, EventsService, LapsService, MyLogger}
+import services._
+
 import scala.concurrent.duration._
 
 class MyTask @Inject()( EventsService: EventsService, DriverService: DriverService, LapsService: LapsService) {
@@ -11,7 +12,6 @@ class MyTask @Inject()( EventsService: EventsService, DriverService: DriverServi
     MyLogger.info("[MyTask] -- Initialising MongoDB Data")
     MyLogger.blue("[MyTask][EVENTS]: Initialising events collection")
     val events = Await.result(EventsService.initialise(), 2.minutes)
-
     addDrivers(events)
   }
 

@@ -1,10 +1,13 @@
 package repositories
 
 import models.Event
+
 import javax.inject.{Inject, Singleton}
 import org.mongodb.scala._
+import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.model._
 import services.MyLogger
+
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
@@ -26,9 +29,13 @@ class EventsRepository @Inject()(dbConnection: MongoCollectionWrapper[Event])(im
 
   def findAll(params: Map[String, String]): Future[Seq[Event]] = {
     MyLogger.info(s"[EventsRepository][findAll]:")
+    val query =  Document(params.map {
+      case (key, value: String)  => key -> BsonString(value)
+      case (key, _)              => throw new IllegalArgumentException(s"Unsupported type for key $key")
+    })
 
-    val filter = Document("date_start" -> -1)
-    dbConnection.findAll(params, filter).recover {
+    val order = Document("date_start" -> -1)
+    dbConnection.findAll(query, order).recover {
       case ex: Throwable =>
         MyLogger.red(s"Failed to find events, $ex")
         Seq.empty[Event]
